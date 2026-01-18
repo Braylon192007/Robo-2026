@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -13,14 +14,13 @@ public class IntakeSubsystem extends SubsystemBase {
   private final SparkMax intakeMotor =
       new SparkMax(IntakeConstants.kIntakeMotorCAN, MotorType.kBrushless);
 
+  @SuppressWarnings("removal")
   public IntakeSubsystem() {
     SparkMaxConfig cfg = new SparkMaxConfig();
-
     cfg.inverted(IntakeConstants.kInverted);
     cfg.smartCurrentLimit(IntakeConstants.kCurrentLimit);
-
-
-    intakeMotor.configure(cfg);
+    
+    intakeMotor.configure(cfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
   }
 
   public void intake() {

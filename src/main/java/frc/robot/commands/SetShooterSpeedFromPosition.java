@@ -36,7 +36,7 @@ public class SetShooterSpeedFromPosition extends Command {
     Translation2d targetXY = getAllianceTarget();
 
     double x = robotXY.getDistance(targetXY);
-    double y = Constants.kTargetHeightMeters - Constants.kShooterExitHeightMeters;
+    double y = SetShooterSpeedFromPositionConstants.kTargetHeightMeters - SetShooterSpeedFromPositionConstants.kShooterExitHeightMeters;
 
     double theta = Math.toRadians(hood.getAngleDeg());
 
@@ -46,7 +46,7 @@ public class SetShooterSpeedFromPosition extends Command {
       return;
     }
 
-    v = clamp(v, Constants.kMinExitSpeedMps, Constants.kMaxExitSpeedMps);
+    v = clamp(v, SetShooterSpeedFromPositionConstants.kMinExitSpeedMps, SetShooterSpeedFromPositionConstants.kMaxExitSpeedMps);
     shooter.setFlywheelRPM(ShooterSubsystem.exitSpeedMpsToFlywheelRPM(v));
   }
 
@@ -64,10 +64,10 @@ public class SetShooterSpeedFromPosition extends Command {
     Optional<Alliance> a = DriverStation.getAlliance();
     if (a.isPresent()) {
       return (a.get() == Alliance.Red)
-          ? Constants.kRedScoreXY
-          : Constants.kBlueScoreXY;
+          ? SetShooterSpeedFromPositionConstants.kRedScoreXY
+          : SetShooterSpeedFromPositionConstants.kBlueScoreXY;
     }
-    return Constants.kFallbackScoreXY;
+    return SetShooterSpeedFromPositionConstants.kFallbackScoreXY;
   }
 
   private static double clamp(double v, double lo, double hi) {

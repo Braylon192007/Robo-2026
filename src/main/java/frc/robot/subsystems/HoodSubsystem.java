@@ -25,7 +25,7 @@ public class HoodSubsystem extends SubsystemBase {
     TalonFXConfiguration cfg = new TalonFXConfiguration();
 
     // Output
-    cfg.MotorOutput.Inverted = HoodConstants.kInverted;
+    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
     // Ratio

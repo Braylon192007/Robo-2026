@@ -11,6 +11,7 @@ import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.util.ShooterMath;
 import frc.robot.Constants.AimHoodAndShooterConstants;
+import frc.robot.Constants.HoodConstants;
 public class AimHoodAndShooter extends Command {
 
   
@@ -36,7 +37,7 @@ public class AimHoodAndShooter extends Command {
     Translation2d targetXY = getAllianceTarget();
 
     double x = robotXY.getDistance(targetXY);
-    double y = Constants.kTargetHeightMeters - Constants.kShooterExitHeightMeters;
+    double y = AimHoodAndShooterConstants.kTargetHeightMeters - AimHoodAndShooterConstants.kShooterExitHeightMeters;
 
     Solution sol = findBestSolution(x, y);
     if (sol == null) {
@@ -75,20 +76,20 @@ public class AimHoodAndShooter extends Command {
     double bestV = Double.POSITIVE_INFINITY;
     double bestAngle = Double.NaN;
 
-    for (double angleDeg = HoodSubsystem.HoodConstants.kMinAngleDeg;
-         angleDeg <= HoodSubsystem.HoodConstants.kMaxAngleDeg;
-         angleDeg += Constants.kAngleStepDeg) {
+    for (double angleDeg = HoodConstants.kMinAngleDeg;
+         angleDeg <= HoodConstants.kMaxAngleDeg;
+         angleDeg += AimHoodAndShooterConstants.kAngleStepDeg) {
 
       double theta = Math.toRadians(angleDeg);
       double v = ShooterMath.requiredExitSpeed(xMeters, yMeters, theta);
       if (!Double.isFinite(v)) continue;
 
-      if (v < Constants.kMinExitSpeedMps || v > Constants.kMaxExitSpeedMps) continue;
+      if (v < AimHoodAndShooterConstants.kMinExitSpeedMps || v > AimHoodAndShooterConstants.kMaxExitSpeedMps) continue;
 
       double apex = ShooterMath.apexHeight(
-          Constants.kShooterExitHeightMeters, v, theta);
+          AimHoodAndShooterConstants.kShooterExitHeightMeters, v, theta);
 
-      if (apex > Constants.kMaxApexHeightMeters) continue;
+      if (apex > AimHoodAndShooterConstants.kMaxApexHeightMeters) continue;
 
       if (v < bestV) {
         bestV = v;
@@ -104,9 +105,9 @@ public class AimHoodAndShooter extends Command {
     Optional<Alliance> a = DriverStation.getAlliance();
     if (a.isPresent()) {
       return (a.get() == Alliance.Red)
-          ? Constants.kRedScoreXY
-          : Constants.kBlueScoreXY;
+          ? AimHoodAndShooterConstants.kRedScoreXY
+          : AimHoodAndShooterConstants.kBlueScoreXY;
     }
-    return Constants.kFallbackScoreXY;
+    return AimHoodAndShooterConstants.kFallbackScoreXY;
   }
 }
