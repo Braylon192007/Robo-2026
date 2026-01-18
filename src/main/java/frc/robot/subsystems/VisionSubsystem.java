@@ -7,7 +7,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
-
+import frc.robot.Constants.VisionConstants;
 /**
  * Fuses multiple Limelights by producing a set of VisionObservations.
  *
@@ -20,26 +20,7 @@ import frc.robot.LimelightHelpers;
 public class VisionSubsystem extends SubsystemBase {
 
   /** Change these to your limelight NT table names. */
-  public static class VisionConstants {
-    public static final String kLLFront = "limelight-front";
-    public static final String kLLLeft  = "limelight-left";
-    public static final String kLLRight = "limelight-right";
-
-    /** If robot is spinning faster than this, ignore vision updates (deg/sec). */
-    public static final double kMaxYawRateDegPerSec = 720.0; // common rule of thumb :contentReference[oaicite:3]{index=3}
-
-    /** Heading std dev (rad). Keep large to mostly trust gyro for heading. :contentReference[oaicite:4]{index=4} */
-    public static final double kThetaStdRad = 999.0;
-
-    /** Base XY std dev (meters) when tags are good. Tune. */
-    public static final double kBaseXYStd = 0.15;
-
-    /** How much to trust measurements as tag distance grows (bigger = trust less). Tune. */
-    public static final double kDistancePenalty = 0.08;
-
-    /** Extra trust bonus for seeing multiple tags (bigger = trust more). Tune. */
-    public static final double kMultiTagBonus = 0.7;
-  }
+  
 
   /** Simple container for a vision measurement for pose estimator fusion. */
   public static class VisionObservation {

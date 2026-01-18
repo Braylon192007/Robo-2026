@@ -11,40 +11,11 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.ShooterConstants;
 
 public class ShooterSubsystem extends SubsystemBase {
 
-  public static class ShooterConstants {
-    // Hardware
-    public static final int kShooterMotorCAN = 20; // <-- change
-    public static final boolean kMotorInverted = false;
-
-    // Flywheel geometry
-    public static final double kFlywheelDiameterMeters = 0.1016; // 4 in
-    public static final double kFlywheelRadiusMeters = kFlywheelDiameterMeters / 2.0;
-
-    // Gear ratio: motorRotations * kGearRatio = flywheelRotations
-    public static final double kGearRatio = 1.0;
-
-    // Exit speed ~= wheel surface speed * this
-    public static final double kExitSpeedPerWheelSpeed = 0.85; // tune
-
-    // Limits
-    public static final double kMinRPM = 0;
-    public static final double kMaxRPM = 6000; // tune safe max
-
-    // Closed-loop (starter values; tune)
-    public static final double kP = 0.0002;
-    public static final double kI = 0.0;
-    public static final double kD = 0.0;
-
-    // NOTE: velocityFF() is deprecated in REVLib in favor of feedForward config,
-    // but it still works on most 2025 builds. If it errors, tell me and I’ll swap to feedForward.
-    public static final double kFF = 0.00017;
-
-    // Ready tolerance
-    public static final double kRPMTolerance = 75.0;
-  }
+  
 
   private final SparkFlex shooterMotor =
       new SparkFlex(ShooterConstants.kShooterMotorCAN, MotorType.kBrushless);

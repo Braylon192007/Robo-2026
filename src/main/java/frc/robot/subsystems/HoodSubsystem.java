@@ -10,39 +10,11 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.HoodConstants;
 
 public class HoodSubsystem extends SubsystemBase {
 
-  public static class HoodConstants {
-    public static final int kHoodCAN = 30; // <-- change
-
-    // ✅ Phoenix 6 wants an enum, not boolean
-    // Pick whichever makes "positive setpoint" move hood the direction you want.
-    public static final InvertedValue kInverted = InvertedValue.CounterClockwise_Positive;
-    // If it goes the wrong way, swap to:
-    // public static final InvertedValue kInverted = InvertedValue.Clockwise_Positive;
-
-    // Hood angle limits (deg)
-    public static final double kMinAngleDeg = 50.0;
-    public static final double kMaxAngleDeg = 60.0;
-
-    // Conversion: hood degrees -> mechanism rotations
-    public static final double kMechanismRotPerDeg = 1.0 / 360.0; // placeholder (fix later)
-
-    // Sensor rotations / mechanism rotations (gearbox between motor and hood)
-    public static final double kSensorToMechanismRatio = 1.0; // set if geared
-
-    // Motion Magic constraints (mechanism rotations/sec and /sec^2)
-    public static final double kCruiseVelocityRps = 2.0;
-    public static final double kAccelerationRps2 = 6.0;
-
-    // PID (starter)
-    public static final double kP = 40.0;
-    public static final double kI = 0.0;
-    public static final double kD = 0.2;
-
-    public static final double kAngleToleranceDeg = 1.0;
-  }
+  
 
   private final TalonFX hood = new TalonFX(HoodConstants.kHoodCAN);
   private final MotionMagicVoltage mmRequest = new MotionMagicVoltage(0);
