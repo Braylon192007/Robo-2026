@@ -8,6 +8,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import frc.robot.Constants.PivotConstants;
 
 public class IntakePivotSubsystem extends SubsystemBase {
@@ -41,7 +43,11 @@ public class IntakePivotSubsystem extends SubsystemBase {
     // Start with current motor position treated as "up=0" until you zero properly
     zeroUpHere();
   }
-
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("IntakePivot/MotorRot", pivot.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("IntakePivot/AngleDeg", getAngleDeg());
+    }
   /**
    * Call this when the intake is physically all the way UP (hard stop),
    * so Up becomes 0.

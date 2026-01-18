@@ -10,6 +10,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import frc.robot.Constants.HoodConstants;
 
 public class HoodSubsystem extends SubsystemBase {
@@ -46,6 +48,11 @@ public class HoodSubsystem extends SubsystemBase {
 
     hood.getConfigurator().apply(cfg);
   }
+  @Override
+    public void periodic() {
+      SmartDashboard.putNumber("Hood/MotorRot", hood.getPosition().getValueAsDouble());
+      SmartDashboard.putNumber("Hood/AngleDeg", getAngleDeg());
+    }
 
   /** Set hood angle in degrees. */
   public void setAngleDeg(double angleDeg) {
@@ -76,4 +83,19 @@ public class HoodSubsystem extends SubsystemBase {
   private static double mechanismRotToDeg(double mechRot) {
     return mechRot / HoodConstants.kMechanismRotPerDeg;
   }
+    /** Manual open-loop percent output for tuning (-1 to 1). */
+  public void setPercent(double percent) {
+    hood.set(percent);
+  }
+
+  /** Stop hood motor. */
+  public void stop() {
+    hood.stopMotor();
+  }
+
+  /** Raw TalonFX position in rotations (useful for encoder testing). */
+  public double getMotorRotations() {
+    return hood.getPosition().getValueAsDouble();
+  }
+
 }

@@ -5,12 +5,12 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Autos;
-import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.commands.*;
+import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
+ 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -20,7 +20,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-
+  private final IntakePivotSubsystem m_intakePivotSubsystem = new IntakePivotSubsystem();
+  private final HoodSubsystem m_hoodSubsystem = new HoodSubsystem();
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
@@ -41,12 +42,22 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
 
+    m_driverController.y()
+    .whileTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setPercent(.5)))
+    .onFalse(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.stop()));
 
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
-    m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+    m_driverController.a()
+    .whileTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setPercent(-.5)))
+    .onFalse(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.stop()));
+
+    m_driverController.x()
+    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(.5)))
+    .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
+
+    m_driverController.b()
+    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(-.5)))
+    .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
   }
 
   /**
