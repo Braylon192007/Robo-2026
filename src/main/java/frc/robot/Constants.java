@@ -5,6 +5,8 @@
 package frc.robot;
 
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.math.geometry.Translation2d;
 
 /**
@@ -167,5 +169,32 @@ public final class Constants {
 
     // Optional ramp so it doesn't spike hard into compression
     public static final double kOpenLoopRampRate = 0.08;
+  }
+  public static class PivotConstants {
+    public static final int kPivotMotorCAN = 50; // <-- change
+
+    public static final InvertedValue kMotorInverted = InvertedValue.CounterClockwise_Positive;
+    public static final NeutralModeValue kNeutralMode = NeutralModeValue.Brake;
+
+    // Soft limits in "degrees" (your units). Up = 0.
+    public static final double kUpDeg = 0.0;
+    public static final double kDownDeg = 75.0; // placeholder until you know down
+    public static final double kMinDeg = 0.0;   // don’t go above up
+    public static final double kMaxDeg = 75.0;  // placeholder until you know down
+
+    // Conversion: motor rotations per degree of pivot.
+    // If you don’t know yet, leave it as a placeholder and tune it by measurement.
+    public static final double kMotorRotPerDeg = 1.0 / 360.0; // placeholder
+
+    // Motion Magic limits (in motor rotations/sec and rotations/sec^2)
+    public static final double kCruiseRotPerSec = 2.0;
+    public static final double kAccelRotPerSec2 = 6.0;
+
+    // PID (starter values; tune)
+    public static final double kP = 60.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.5;
+
+    public static final double kToleranceDeg = 2.0;
   }
 }
