@@ -140,4 +140,32 @@ public final class Constants {
     // Safety
     public static final int kCurrentLimit = 30; // NEO 550 safe-ish limit
   }
+  public static class ConveyorConstants {
+    public static final int kConveyorMotorCAN = 41; // <-- change
+    public static final boolean kInverted = false;
+
+    // Speeds (tune on robot)
+    public static final double kFeedSpeed = 0.85;     // hopper -> indexer
+    public static final double kReverseSpeed = -0.85; // clear jams / eject
+
+    // Current limit (NEO Vortex is strong — limit it)
+    public static final int kCurrentLimit = 50;
+
+    // Optional ramp rate (keeps it snappy but less violent)
+    public static final double kOpenLoopRampRate = 0.05;
+  }
+  public static class IndexerConstants {
+    public static final int kIndexerMotorCAN = 42; // <-- change
+    public static final boolean kInverted = false;
+
+    // Speeds (tune)
+    public static final double kFeedSpeed = 0.70;     // up into shooter (compression load)
+    public static final double kReverseSpeed = -0.60; // clear jam / back ball out
+
+    // Current limiting helps a LOT with compression/jams
+    public static final int kCurrentLimit = 45;
+
+    // Optional ramp so it doesn't spike hard into compression
+    public static final double kOpenLoopRampRate = 0.08;
+  }
 }

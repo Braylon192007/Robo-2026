@@ -38,7 +38,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // If this line errors on your exact REVLib version, tell me and I'll switch to:
     // config.closedLoop.feedForward.<something...>
-    config.closedLoop.velocityFF(ShooterConstants.kFF);
+    config.closedLoop.feedForward.kV(ShooterConstants.kFF);
 
     // Apply config:
     // - Reset safe params so you're in a known state
