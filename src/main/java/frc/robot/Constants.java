@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+    public static final int kOperatorControllerPort = 1;
   }
   public static class HoodConstants {
     public static final int kHoodCAN = 30; // <-- change

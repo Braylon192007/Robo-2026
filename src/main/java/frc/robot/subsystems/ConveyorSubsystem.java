@@ -1,10 +1,10 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
-
+import com.revrobotics.ResetMode;
+import com.revrobotics.PersistMode;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ConveyorConstants;
 public class ConveyorSubsystem extends SubsystemBase {
@@ -20,7 +20,7 @@ public class ConveyorSubsystem extends SubsystemBase {
     cfg.smartCurrentLimit(ConveyorConstants.kCurrentLimit);
     cfg.openLoopRampRate(ConveyorConstants.kOpenLoopRampRate);
 
-    conveyorMotor.configure(cfg, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+    conveyorMotor.configure(cfg, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   /** Feed balls toward the indexer. */
