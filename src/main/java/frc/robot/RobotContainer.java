@@ -44,7 +44,6 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final IntakePivotSubsystem m_intakePivotSubsystem = new IntakePivotSubsystem();
   private final HoodSubsystem m_hoodSubsystem = new HoodSubsystem();
   // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -74,6 +73,7 @@ public class RobotContainer {
   private void configureBindings() {
     drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
+
             drivetrain.applyRequest(() ->
                 drive.withVelocityX(-m_driverController.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(-m_driverController.getLeftX() * MaxSpeed) // Drive left with negative X (left)
@@ -102,6 +102,9 @@ public class RobotContainer {
     m_operatorController.b()
     .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(-.5)))
     .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
+
+    m_driverController.rightTrigger()
+    .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY() * MaxSpeed, () -> -m_driverController.getLeftX() * MaxSpeed));
   }
 
   /**

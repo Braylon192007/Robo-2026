@@ -74,9 +74,9 @@ public final class Constants {
     public static final double kMaxRPM = 6000; // tune safe max
 
     // Closed-loop (starter values; tune)
-    public static final double kP = 0.0002;
+    public static final double kP = 0.00025;
     public static final double kI = 0.0;
-    public static final double kD = 0.0;
+    public static final double kD = 0.00015;
 
     // NOTE: velocityFF() is deprecated in REVLib in favor of feedForward config,
     // but it still works on most 2025 builds. If it errors, tell me and I’ll swap to feedForward.

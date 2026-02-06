@@ -17,6 +17,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
@@ -28,7 +29,8 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
+import frc.robot.Constants.VisionConstants;
+import frc.robot.LimelightHelpers;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -54,6 +56,54 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+    public void updateVisionFromLimelight() {
+        // Use ONE limelight for global pose (usually the one with best tag view)
+        final String ll = VisionConstants.kLLFront;
+
+        var alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+
+        // MegaTag2 is best if your Limelight + helpers support it
+        var est = (alliance == Alliance.Red)
+            ? LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(ll)
+            : LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll);
+
+        if (est == null) return;
+
+        // Must see tags
+        if (est.tagCount <= 0) return;
+
+        // Optional: reject far single-tag solves (usually jumpy)
+        if (est.tagCount == 1 && est.avgTagDist > 3.0) return;
+
+        // Reject if spinning too fast (deg/s threshold from your constants)
+        double yawRateDegPerSec = Math.toDegrees(Math.abs(getState().Speeds.omegaRadiansPerSecond));
+        if (yawRateDegPerSec > VisionConstants.kMaxYawRateDegPerSec) return;
+
+        // Reject huge jumps (prevents random snaps)
+        Pose2d current = getState().Pose;
+        double dx = est.pose.getX() - current.getX();
+        double dy = est.pose.getY() - current.getY();
+        double jumpMeters = Math.hypot(dx, dy);
+        if (jumpMeters > 1.25) return; // tune if needed
+
+        // ---- Dynamic trust model (simple + effective) ----
+        // Base XY std dev grows with distance (trust less far away)
+        double xyStd = VisionConstants.kBaseXYStd + VisionConstants.kDistancePenalty * est.avgTagDist;
+
+        // Multi-tag bonus (trust more with >=2 tags)
+        if (est.tagCount >= 2) {
+            xyStd *= VisionConstants.kMultiTagBonus; // <1 means more trust
+        }
+
+        // Keep heading mostly gyro-driven by default (your constant is huge)
+        double thetaStd = VisionConstants.kThetaStdRad;
+
+        var visionStdDevs = VecBuilder.fill(xyStd, xyStd, thetaStd);
+
+        // Your overrides already convert FPGA timestamp correctly
+        addVisionMeasurement(est.pose, est.timestampSeconds, visionStdDevs);
+    }
+
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -248,6 +298,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+        updateVisionFromLimelight();
     }
     public void configureAutoBuilder() {
         try {
