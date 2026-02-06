@@ -1,101 +1,70 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.HoodConstants;
 
 public class HoodSubsystem extends SubsystemBase {
 
-  
+  // WCP-0412 is an RC-servo style actuator: command position via PWM
+  private final Servo hoodServo = new Servo(HoodConstants.kHoodPwmChannel);
 
-  private final TalonFX hood = new TalonFX(HoodConstants.kHoodCAN);
-  private final MotionMagicVoltage mmRequest = new MotionMagicVoltage(0);
-
-  private double targetAngleDeg = HoodConstants.kMinAngleDeg;
+  private double targetStrokeMm = HoodConstants.kMinStrokeMm;
 
   public HoodSubsystem() {
-    TalonFXConfiguration cfg = new TalonFXConfiguration();
+    // WCP docs: 1.0ms = fully retract, 2.0ms = fully extend. :contentReference[oaicite:2]{index=2}
+    // Configure servo pulse bounds to match the actuator.
+    // (max, deadbandMax, center, deadbandMin, min) in microseconds
+    hoodServo.setBoundsMicroseconds(2000, 0, 1500, 0, 1000);
 
-    // Output
-    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-
-    // Ratio
-    cfg.Feedback.SensorToMechanismRatio = HoodConstants.kSensorToMechanismRatio;
-
-    // PID
-    Slot0Configs slot0 = new Slot0Configs();
-    slot0.kP = HoodConstants.kP;
-    slot0.kI = HoodConstants.kI;
-    slot0.kD = HoodConstants.kD;
-    cfg.Slot0 = slot0;
-
-    // Motion Magic
-    MotionMagicConfigs mm = new MotionMagicConfigs();
-    mm.MotionMagicCruiseVelocity = HoodConstants.kCruiseVelocityRps;
-    mm.MotionMagicAcceleration   = HoodConstants.kAccelerationRps2;
-    cfg.MotionMagic = mm;
-
-    hood.getConfigurator().apply(cfg);
+    // Optional: start at a safe known angle
+    setStrokeMm(HoodConstants.kMinStrokeMm);
   }
+
   @Override
-    public void periodic() {
-      SmartDashboard.putNumber("Hood/MotorRot", hood.getPosition().getValueAsDouble());
-      SmartDashboard.putNumber("Hood/AngleDeg", getAngleDeg());
-    }
-
-  /** Set hood angle in degrees. */
-  public void setAngleDeg(double angleDeg) {
-    angleDeg = MathUtil.clamp(angleDeg, HoodConstants.kMinAngleDeg, HoodConstants.kMaxAngleDeg);
-    targetAngleDeg = angleDeg;
-
-    double mechRot = angleDegToMechanismRot(angleDeg);
-    hood.setControl(mmRequest.withPosition(mechRot));
+  public void periodic() {
+    SmartDashboard.putNumber("Hood/TargetStrokeMm", targetStrokeMm);
+    SmartDashboard.putNumber("Hood/CommandedPWM(0-1)", hoodServo.get());
+    // NOTE: This is NOT actual position feedback, just what we're commanding.
   }
 
-  public double getAngleDeg() {
-    double mechRot = hood.getPosition().getValueAsDouble(); // mechanism rotations
-    return mechanismRotToDeg(mechRot);
+  /** Set hood angle in degrees (mapped across actuator stroke). */
+  public void setStrokeMm(double strokeMm) {
+  strokeMm = MathUtil.clamp(strokeMm, HoodConstants.kMinStrokeMm, HoodConstants.kMaxStrokeMm);
+  targetStrokeMm = strokeMm;
+
+  // Map mm -> servo position [0..1]
+  double pos = (strokeMm - HoodConstants.kMinStrokeMm) /
+               (HoodConstants.kMaxStrokeMm - HoodConstants.kMinStrokeMm);
+
+  hoodServo.set(MathUtil.clamp(pos, 0.0, 1.0));
+}
+
+  /** Returns the last requested target angle (not measured). */
+  public double getTargetStrokeMm() {
+    return targetStrokeMm;
   }
 
-  public double getTargetAngleDeg() {
-    return targetAngleDeg;
-  }
-
+  /** With no sensor, "at setpoint" can only be approximate/time-based. */
   public boolean atSetpoint() {
-    return Math.abs(getAngleDeg() - targetAngleDeg) <= HoodConstants.kAngleToleranceDeg;
+    // If you add a potentiometer/encoder later, swap this to real feedback.
+    return false;
   }
 
-  private static double angleDegToMechanismRot(double angleDeg) {
-    return angleDeg * HoodConstants.kMechanismRotPerDeg;
-  }
-
-  private static double mechanismRotToDeg(double mechRot) {
-    return mechRot / HoodConstants.kMechanismRotPerDeg;
-  }
-    /** Manual open-loop percent output for tuning (-1 to 1). */
+  /** Manual command in [0..1] where 0=retract, 1=extend */
   public void setPercent(double percent) {
-    hood.set(percent);
+    hoodServo.set(MathUtil.clamp(percent, 0.0, 1.0));
+    // keep targetStrokeMm in sync (optional)
+    targetStrokeMm = HoodConstants.kMinStrokeMm +
+        hoodServo.get() * (HoodConstants.kMaxStrokeMm - HoodConstants.kMinStrokeMm);
   }
 
-  /** Stop hood motor. */
+  /** Stop sending movement commands (holds last position on most servo actuators). */
   public void stop() {
-    hood.stopMotor();
+    // You can either leave it alone (it will keep holding), or set to the same value.
+    hoodServo.set(hoodServo.get());
   }
-
-  /** Raw TalonFX position in rotations (useful for encoder testing). */
-  public double getMotorRotations() {
-    return hood.getPosition().getValueAsDouble();
-  }
-
 }

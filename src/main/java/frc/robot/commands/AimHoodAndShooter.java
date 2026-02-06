@@ -45,7 +45,7 @@ public class AimHoodAndShooter extends Command {
       return;
     }
 
-    hood.setAngleDeg(sol.angleDeg);
+    hood.setStrokeMm(sol.strokeMm);
     shooter.setFlywheelRPM(
         ShooterSubsystem.exitSpeedMpsToFlywheelRPM(sol.exitSpeedMps));
   }
@@ -63,24 +63,24 @@ public class AimHoodAndShooter extends Command {
   // ---------------- internal helpers ----------------
 
   private static class Solution {
-    final double angleDeg;
+    final double strokeMm;
     final double exitSpeedMps;
 
-    Solution(double angleDeg, double exitSpeedMps) {
-      this.angleDeg = angleDeg;
+    Solution(double strokeMm, double exitSpeedMps) {
+      this.strokeMm = strokeMm;
       this.exitSpeedMps = exitSpeedMps;
     }
   }
 
   private Solution findBestSolution(double xMeters, double yMeters) {
     double bestV = Double.POSITIVE_INFINITY;
-    double bestAngle = Double.NaN;
+    double bestStroke = Double.NaN;
 
-    for (double angleDeg = HoodConstants.kMinAngleDeg;
-         angleDeg <= HoodConstants.kMaxAngleDeg;
-         angleDeg += AimHoodAndShooterConstants.kAngleStepDeg) {
+    for (double strokeMm = HoodConstants.kMinStrokeMm;
+         strokeMm <= HoodConstants.kMaxStrokeMm;
+         strokeMm += AimHoodAndShooterConstants.kAngleStepDeg) {
 
-      double theta = Math.toRadians(angleDeg);
+      double theta = Math.toRadians(strokeMm);
       double v = ShooterMath.requiredExitSpeed(xMeters, yMeters, theta);
       if (!Double.isFinite(v)) continue;
 
@@ -93,12 +93,12 @@ public class AimHoodAndShooter extends Command {
 
       if (v < bestV) {
         bestV = v;
-        bestAngle = angleDeg;
+        bestStroke = strokeMm;
       }
     }
 
     if (!Double.isFinite(bestV)) return null;
-    return new Solution(bestAngle, bestV);
+    return new Solution(bestStroke, bestV);
   }
 
   private static Translation2d getAllianceTarget() {

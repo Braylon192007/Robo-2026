@@ -23,34 +23,14 @@ public final class Constants {
     public static final int kOperatorControllerPort = 1;
   }
   public static class HoodConstants {
-    public static final int kHoodCAN = 30; // <-- change
+    public static final int kHoodPwmChannel = 0; // example
 
-    // ✅ Phoenix 6 wants an enum, not boolean
-    // Pick whichever makes "positive setpoint" move hood the direction you want.
-    public static final InvertedValue kInverted = InvertedValue.CounterClockwise_Positive;
-    // If it goes the wrong way, swap to:
-    // public static final InvertedValue kInverted = InvertedValue.Clockwise_Positive;
+    public static final double kMinStrokeMm = 0.0;
+    public static final double kMaxStrokeMm = 140.0;
 
-    // Hood angle limits (deg)
-    public static final double kMinAngleDeg = 50.0;
-    public static final double kMaxAngleDeg = 60.0;
+    // If you still want tolerance later, only works if you add real feedback:
+    public static final double kStrokeToleranceMm = 1.0;
 
-    // Conversion: hood degrees -> mechanism rotations
-    public static final double kMechanismRotPerDeg = 1.0 / 360.0; // placeholder (fix later)
-
-    // Sensor rotations / mechanism rotations (gearbox between motor and hood)
-    public static final double kSensorToMechanismRatio = 1.0; // set if geared
-
-    // Motion Magic constraints (mechanism rotations/sec and /sec^2)
-    public static final double kCruiseVelocityRps = 2.0;
-    public static final double kAccelerationRps2 = 6.0;
-
-    // PID (starter)
-    public static final double kP = 40.0;
-    public static final double kI = 0.0;
-    public static final double kD = 0.2;
-
-    public static final double kAngleToleranceDeg = 1.0;
   }
 
 
@@ -110,9 +90,9 @@ public final class Constants {
     public static final Translation2d kRedScoreXY  = new Translation2d(11.984, 4.072);
 
     public static final double kTargetHeightMeters = 1.8288; // 6 ft
-    public static final double kShooterExitHeightMeters = 0.90;
+    public static final double kShooterExitHeightMeters = 0.4826;
 
-    public static final double kMaxApexHeightMeters = 3.048; // 10 ft
+    public static final double kMaxApexHeightMeters = 2.4384; // 8 ft
     public static final double kAngleStepDeg = 0.5;
 
     public static final double kMinExitSpeedMps = 3.0;
@@ -192,9 +172,9 @@ public final class Constants {
     public static final double kAccelRotPerSec2 = 6.0;
 
     // PID (starter values; tune)
-    public static final double kP = 60.0;
+    public static final double kP = 0.00025;
     public static final double kI = 0.0;
-    public static final double kD = 0.5;
+    public static final double kD = 0.00015;
 
     public static final double kToleranceDeg = 2.0;
   }
