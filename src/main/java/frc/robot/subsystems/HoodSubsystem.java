@@ -1,70 +1,117 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.HoodConstants;
 
+// REVLib Servo Hub (CAN)
+import com.revrobotics.REVLibError;
+import com.revrobotics.ResetMode;                 // <-- note: com.revrobotics.ResetMode (not ServoHub.ResetMode)
+import com.revrobotics.servohub.ServoHub;
+import com.revrobotics.servohub.ServoChannel;
+import com.revrobotics.servohub.ServoChannel.ChannelId;
+import com.revrobotics.servohub.config.ServoHubConfig;
+import com.revrobotics.servohub.config.ServoChannelConfig;
+
 public class HoodSubsystem extends SubsystemBase {
 
-  // WCP-0412 is an RC-servo style actuator: command position via PWM
-  private final Servo hoodServo = new Servo(HoodConstants.kHoodPwmChannel);
+  private final ServoHub servoHub = new ServoHub(HoodConstants.kServoHubCanId);
+
+  private final ServoChannel hoodChannel =
+      servoHub.getServoChannel(HoodConstants.kHoodChannelId);
 
   private double targetStrokeMm = HoodConstants.kMinStrokeMm;
+  private int lastPulseUs = HoodConstants.kMinPulseUs;
 
   public HoodSubsystem() {
-    // WCP docs: 1.0ms = fully retract, 2.0ms = fully extend. :contentReference[oaicite:2]{index=2}
-    // Configure servo pulse bounds to match the actuator.
-    // (max, deadbandMax, center, deadbandMin, min) in microseconds
-    hoodServo.setBoundsMicroseconds(2000, 0, 1500, 0, 1000);
+    // Build a channel config and apply it to the hub config (this replaces cfg.channel(...))
+    ServoHubConfig cfg = new ServoHubConfig();
 
-    // Optional: start at a safe known angle
+    ServoChannelConfig hoodCfg = new ServoChannelConfig(HoodConstants.kHoodChannelId)
+        .pulseRange(HoodConstants.kMinPulseUs,
+                    HoodConstants.kCenterPulseUs,
+                    HoodConstants.kMaxPulseUs);
+
+    // Apply per-channel config
+    cfg.apply(HoodConstants.kHoodChannelId, hoodCfg);
+
+    // Push config to device (persisting can be slow; do this once at startup)
+    servoHub.configure(cfg, ResetMode.kResetSafeParameters);
+
+    // Enable + power the channel
+    hoodChannel.setPowered(true);
+    hoodChannel.setEnabled(true);
+
     setStrokeMm(HoodConstants.kMinStrokeMm);
   }
 
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Hood/TargetStrokeMm", targetStrokeMm);
-    SmartDashboard.putNumber("Hood/CommandedPWM(0-1)", hoodServo.get());
-    // NOTE: This is NOT actual position feedback, just what we're commanding.
+    SmartDashboard.putNumber("Hood/LastPulseUs", lastPulseUs);
+    SmartDashboard.putNumber("Hood/TargetAngleDeg", getTargetAngleDeg());
+    SmartDashboard.putBoolean("Hood/Enabled", hoodChannel.isEnabled());
+    SmartDashboard.putNumber("Hood/CurrentA", hoodChannel.getCurrent());
   }
 
-  /** Set hood angle in degrees (mapped across actuator stroke). */
+  /** Set hood stroke in millimeters (mapped to pulse width). */
   public void setStrokeMm(double strokeMm) {
-  strokeMm = MathUtil.clamp(strokeMm, HoodConstants.kMinStrokeMm, HoodConstants.kMaxStrokeMm);
-  targetStrokeMm = strokeMm;
+    strokeMm = MathUtil.clamp(strokeMm, HoodConstants.kMinStrokeMm, HoodConstants.kMaxStrokeMm);
+    targetStrokeMm = strokeMm;
 
-  // Map mm -> servo position [0..1]
-  double pos = (strokeMm - HoodConstants.kMinStrokeMm) /
+    // Map mm -> [0..1]
+    double t = (strokeMm - HoodConstants.kMinStrokeMm) /
                (HoodConstants.kMaxStrokeMm - HoodConstants.kMinStrokeMm);
+    t = MathUtil.clamp(t, 0.0, 1.0);
 
-  hoodServo.set(MathUtil.clamp(pos, 0.0, 1.0));
-}
+    // Map [0..1] -> pulse width (us)
+    int pulseUs = (int) Math.round(
+        HoodConstants.kMinPulseUs + t * (HoodConstants.kMaxPulseUs - HoodConstants.kMinPulseUs)
+    );
+    pulseUs = MathUtil.clamp(pulseUs, HoodConstants.kMinPulseUs, HoodConstants.kMaxPulseUs);
 
-  /** Returns the last requested target angle (not measured). */
+    lastPulseUs = pulseUs;
+
+    REVLibError err = hoodChannel.setPulseWidth(pulseUs);
+    SmartDashboard.putString("Hood/LastREVLibError", err.toString());
+  }
+
   public double getTargetStrokeMm() {
     return targetStrokeMm;
   }
 
-  /** With no sensor, "at setpoint" can only be approximate/time-based. */
+  public double getTargetAngleDeg() {
+    double t = (targetStrokeMm - HoodConstants.kMinStrokeMm) /
+               (HoodConstants.kMaxStrokeMm - HoodConstants.kMinStrokeMm);
+    t = MathUtil.clamp(t, 0.0, 1.0);
+
+    return HoodConstants.kMinAngleDeg +
+           t * (HoodConstants.kMaxAngleDeg - HoodConstants.kMinAngleDeg);
+  }
+
   public boolean atSetpoint() {
-    // If you add a potentiometer/encoder later, swap this to real feedback.
     return false;
   }
 
   /** Manual command in [0..1] where 0=retract, 1=extend */
   public void setPercent(double percent) {
-    hoodServo.set(MathUtil.clamp(percent, 0.0, 1.0));
-    // keep targetStrokeMm in sync (optional)
+    percent = MathUtil.clamp(percent, 0.0, 1.0);
+
+    int pulseUs = (int) Math.round(
+        HoodConstants.kMinPulseUs + percent * (HoodConstants.kMaxPulseUs - HoodConstants.kMinPulseUs)
+    );
+    pulseUs = MathUtil.clamp(pulseUs, HoodConstants.kMinPulseUs, HoodConstants.kMaxPulseUs);
+
+    lastPulseUs = pulseUs;
+    hoodChannel.setPulseWidth(pulseUs);
+
     targetStrokeMm = HoodConstants.kMinStrokeMm +
-        hoodServo.get() * (HoodConstants.kMaxStrokeMm - HoodConstants.kMinStrokeMm);
+        percent * (HoodConstants.kMaxStrokeMm - HoodConstants.kMinStrokeMm);
   }
 
-  /** Stop sending movement commands (holds last position on most servo actuators). */
   public void stop() {
-    // You can either leave it alone (it will keep holding), or set to the same value.
-    hoodServo.set(hoodServo.get());
+    hoodChannel.setPulseWidth(lastPulseUs);
   }
 }

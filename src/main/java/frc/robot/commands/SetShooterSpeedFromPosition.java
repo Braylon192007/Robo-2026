@@ -38,7 +38,7 @@ public class SetShooterSpeedFromPosition extends Command {
     double x = robotXY.getDistance(targetXY);
     double y = SetShooterSpeedFromPositionConstants.kTargetHeightMeters - SetShooterSpeedFromPositionConstants.kShooterExitHeightMeters;
 
-    double theta = Math.toRadians(hood.getAngleDeg());
+    double theta = Math.toRadians(hood.getTargetAngleDeg());
 
     double v = ShooterMath.requiredExitSpeed(x, y, theta);
     if (!Double.isFinite(v)) {

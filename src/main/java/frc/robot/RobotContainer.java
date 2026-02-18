@@ -14,6 +14,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -46,6 +47,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final IntakePivotSubsystem m_intakePivotSubsystem = new IntakePivotSubsystem();
   private final HoodSubsystem m_hoodSubsystem = new HoodSubsystem();
+  private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
@@ -105,6 +107,8 @@ public class RobotContainer {
 
     m_driverController.rightTrigger()
     .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY() * MaxSpeed, () -> -m_driverController.getLeftX() * MaxSpeed));
+
+    m_shooterSubsystem.setFlywheelRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
   }
 
   /**

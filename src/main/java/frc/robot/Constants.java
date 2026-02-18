@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.servohub.ServoChannel.ChannelId;
 
 import edu.wpi.first.math.geometry.Translation2d;
 
@@ -28,9 +29,18 @@ public final class Constants {
     public static final double kMinStrokeMm = 0.0;
     public static final double kMaxStrokeMm = 140.0;
 
+    public static final double kMinAngleDeg = 55.0;
+    public static final double kMaxAngleDeg = 80.0; 
+
     // If you still want tolerance later, only works if you add real feedback:
     public static final double kStrokeToleranceMm = 1.0;
 
+    public static final int kMinPulseUs = 1000;
+    public static final int kCenterPulseUs = 1500;
+    public static final int kMaxPulseUs = 2000;
+
+    public static final int kServoHubCanId = 30; // <-- change
+    public static final ChannelId kHoodChannelId = ChannelId.kChannelId0;
   }
 
 
@@ -105,7 +115,7 @@ public final class Constants {
     public static final Translation2d kRedScoreXY  = new Translation2d(11.984, 4.072);
 
     public static final double kTargetHeightMeters = 1.8288; // 6 ft
-    public static final double kShooterExitHeightMeters = 0.90; // measure this
+    public static final double kShooterExitHeightMeters = 0.5334; // measure this
 
     public static final double kMinExitSpeedMps = 3.0;
     public static final double kMaxExitSpeedMps = 25.0;
