@@ -24,29 +24,41 @@ public final class Constants {
     public static final int kOperatorControllerPort = 1;
   }
   public static class HoodConstants {
-    public static final int kHoodPwmChannel = 0; // example
 
+    // Servo Hub (CAN)
+    public static final int kServoHubCanId = 4; // <-- change if needed
+
+    // Two linear servos, same mechanism
+    public static final ChannelId kHoodChannelIdLeft  = ChannelId.kChannelId0;
+    public static final ChannelId kHoodChannelIdRight = ChannelId.kChannelId1;
+
+    // Pulse widths (microseconds)
+    public static final int kMinPulseUs    = 900;
+    public static final int kCenterPulseUs = 1275;
+    public static final int kMaxPulseUs    = 1625;
+
+    // Stroke range (mm) of your actuator
     public static final double kMinStrokeMm = 0.0;
     public static final double kMaxStrokeMm = 140.0;
 
+    // If you map distance -> angle later (optional)
     public static final double kMinAngleDeg = 55.0;
-    public static final double kMaxAngleDeg = 80.0; 
+    public static final double kMaxAngleDeg = 80.0;
 
-    // If you still want tolerance later, only works if you add real feedback:
+    // If one actuator is mirrored mechanically, you may need to invert one side.
+    // Start false. If one side moves opposite, set true.
+    public static final boolean kInvertRightPulse = false;
+
+    // Dashboard / logic tolerance (no real feedback unless you add it)
     public static final double kStrokeToleranceMm = 1.0;
-
-    public static final int kMinPulseUs = 1000;
-    public static final int kCenterPulseUs = 1500;
-    public static final int kMaxPulseUs = 2000;
-
-    public static final int kServoHubCanId = 30; // <-- change
-    public static final ChannelId kHoodChannelId = ChannelId.kChannelId0;
   }
+
+  
 
 
   public static class ShooterConstants {
     // Hardware
-    public static final int kShooterMotorCAN = 20; // <-- change
+    public static final int kShooterMotorCAN = 7; // <-- change
     public static final boolean kMotorInverted = false;
 
     // Flywheel geometry
@@ -123,7 +135,7 @@ public final class Constants {
     public static final Translation2d kFallbackScoreXY = kBlueScoreXY;
   }
   public static class IntakeConstants {
-    public static final int kIntakeMotorCAN = 40; // <-- change
+    public static final int kIntakeMotorCAN = 3; // <-- change
     public static final boolean kInverted = false;
 
     // Speeds (tune on robot)
@@ -134,7 +146,7 @@ public final class Constants {
     public static final int kCurrentLimit = 30; // NEO 550 safe-ish limit
   }
   public static class ConveyorConstants {
-    public static final int kConveyorMotorCAN = 41; // <-- change
+    public static final int kConveyorMotorCAN = 2; // <-- change
     public static final boolean kInverted = false;
 
     // Speeds (tune on robot)
@@ -148,7 +160,7 @@ public final class Constants {
     public static final double kOpenLoopRampRate = 0.05;
   }
   public static class IndexerConstants {
-    public static final int kIndexerMotorCAN = 42; // <-- change
+    public static final int kIndexerMotorCAN = 5; // <-- change
     public static final boolean kInverted = false;
 
     // Speeds (tune)
@@ -162,30 +174,56 @@ public final class Constants {
     public static final double kOpenLoopRampRate = 0.08;
   }
   public static class PivotConstants {
-    public static final int kPivotMotorCAN = 50; // <-- change
 
-    public static final InvertedValue kMotorInverted = InvertedValue.CounterClockwise_Positive;
-    public static final NeutralModeValue kNeutralMode = NeutralModeValue.Brake;
+  // CAN ID
+  public static final int kPivotMotorCAN = 6;
 
-    // Soft limits in "degrees" (your units). Up = 0.
-    public static final double kUpDeg = 0.0;
-    public static final double kDownDeg = 75.0; // placeholder until you know down
-    public static final double kMinDeg = 0.0;   // don’t go above up
-    public static final double kMaxDeg = 75.0;  // placeholder until you know down
+  // Motor direction
+  public static final boolean kMotorInverted = false;
 
-    // Conversion: motor rotations per degree of pivot.
-    // If you don’t know yet, leave it as a placeholder and tune it by measurement.
-    public static final double kMotorRotPerDeg = 1.0 / 360.0; // placeholder
+  // Angle limits (degrees)
+  // Define UP as 0 deg
+  public static final double kUpDeg = 0.0;
+  public static final double kDownDeg = 80.0;
 
-    // Motion Magic limits (in motor rotations/sec and rotations/sec^2)
-    public static final double kCruiseRotPerSec = 2.0;
-    public static final double kAccelRotPerSec2 = 6.0;
+  public static final double kMinDeg = kUpDeg;
+  public static final double kMaxDeg = kDownDeg;
 
-    // PID (starter values; tune)
-    public static final double kP = 0.00025;
-    public static final double kI = 0.0;
-    public static final double kD = 0.00015;
+  /*
+   * Conversion
+   * 25:1 reduction
+   * 360 deg per output revolution
+   */
+  public static final double kMotorRotPerDeg = 25.0 / 360.0; // ≈ 0.06944
 
-    public static final double kToleranceDeg = 2.0;
-  }
+  /*
+   * MAXMotion limits
+   * Units: MOTOR rotations / second
+   */
+  public static final double kCruiseRotPerSec = 12.0;    // ~720 RPM motor
+  public static final double kAccelRotPerSec2 = 60.0;    // snappy return
+
+  // Allowed error before MAXMotion "gives up" on profiling
+  public static final double kAllowedProfileErrorRot = 0.08;
+
+  /*
+   * PID (starting values – expect to tune kP slightly)
+   */
+  public static final double kP = 0.25;
+  public static final double kI = 0.0;
+  public static final double kD = 2.0;
+
+  /*
+   * Feedforward
+   * Set to 0 unless you add gravity compensation
+   */
+  public static final double kFF = 0.0;
+
+  // How close is "good enough"
+  public static final double kToleranceDeg = 2.0;
+
+  // Current limit for holding against impacts
+  public static final int kCurrentLimitA = 25;
+}
+
 }

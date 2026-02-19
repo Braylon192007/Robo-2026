@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+ 
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -51,6 +52,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
     SmartDashboard.putString("Auto Path Selected", autoPath.getSelected());
     SmartDashboard.putNumber("Flywheel RPM", flywheelRPM.getSelected());
+    m_robotContainer.m_shooterSubsystem.setFlywheelRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

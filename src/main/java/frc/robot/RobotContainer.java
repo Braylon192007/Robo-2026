@@ -45,9 +45,9 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   // The robot's subsystems and commands are defined here...
-  private final IntakePivotSubsystem m_intakePivotSubsystem = new IntakePivotSubsystem();
+  public final IntakePivotSubsystem m_intakePivotSubsystem = new IntakePivotSubsystem();
   private final HoodSubsystem m_hoodSubsystem = new HoodSubsystem();
-  private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
+  public final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
@@ -108,7 +108,6 @@ public class RobotContainer {
     m_driverController.rightTrigger()
     .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY() * MaxSpeed, () -> -m_driverController.getLeftX() * MaxSpeed));
 
-    m_shooterSubsystem.setFlywheelRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
   }
 
   /**

@@ -1,91 +1,143 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.PivotConstants;
 
 public class IntakePivotSubsystem extends SubsystemBase {
 
-  
+  private final SparkMax pivot =
+      new SparkMax(PivotConstants.kPivotMotorCAN, MotorType.kBrushless);
 
-  private final TalonFX pivot = new TalonFX(PivotConstants.kPivotMotorCAN);
-  private final MotionMagicVoltage mm = new MotionMagicVoltage(0);
+  private final SparkClosedLoopController controller =
+      pivot.getClosedLoopController();
+
+  private final RelativeEncoder encoder = pivot.getEncoder();
 
   private double targetDeg = PivotConstants.kUpDeg;
+  private boolean holding = true;
 
   public IntakePivotSubsystem() {
-    TalonFXConfiguration cfg = new TalonFXConfiguration();
 
-    cfg.MotorOutput.Inverted = PivotConstants.kMotorInverted;
-    cfg.MotorOutput.NeutralMode = PivotConstants.kNeutralMode;
+    SparkMaxConfig config = new SparkMaxConfig();
 
-    Slot0Configs slot0 = new Slot0Configs();
-    slot0.kP = PivotConstants.kP;
-    slot0.kI = PivotConstants.kI;
-    slot0.kD = PivotConstants.kD;
-    cfg.Slot0 = slot0;
+    config.inverted(PivotConstants.kMotorInverted);
+    config.idleMode(IdleMode.kBrake);
+    config.smartCurrentLimit(PivotConstants.kCurrentLimitA);
 
-    MotionMagicConfigs mmCfg = new MotionMagicConfigs();
-    mmCfg.MotionMagicCruiseVelocity = PivotConstants.kCruiseRotPerSec;
-    mmCfg.MotionMagicAcceleration   = PivotConstants.kAccelRotPerSec2;
-    cfg.MotionMagic = mmCfg;
+    // PID
+    config.closedLoop
+        .pid(
+            PivotConstants.kP,
+            PivotConstants.kI,
+            PivotConstants.kD)
+        .outputRange(-1.0, 1.0);
 
-    pivot.getConfigurator().apply(cfg);
+    // MAXMotion settings
+    config.closedLoop.maxMotion
+        .cruiseVelocity(PivotConstants.kCruiseRotPerSec)
+        .maxAcceleration(PivotConstants.kAccelRotPerSec2)
+        .allowedProfileError(PivotConstants.kAllowedProfileErrorRot);
 
-    // Start with current motor position treated as "up=0" until you zero properly
+    pivot.configure(
+        config,
+        ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
+
+    // Zero on boot (assumes robot powers on with intake UP)
     zeroUpHere();
+    holdAt(targetDeg);
   }
-    @Override
-    public void periodic() {
-        SmartDashboard.putNumber("IntakePivot/MotorRot", pivot.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("IntakePivot/AngleDeg", getAngleDeg());
+
+  @Override
+  public void periodic() {
+    SmartDashboard.putNumber("IntakePivot/AngleDeg", getAngleDeg());
+    SmartDashboard.putNumber("IntakePivot/TargetDeg", targetDeg);
+    SmartDashboard.putBoolean("IntakePivot/Holding", holding);
+
+    // Re-assert hold every loop so bumps are corrected immediately
+    if (holding) {
+      double motorRotTarget =
+          targetDeg * PivotConstants.kMotorRotPerDeg;
+
+      controller.setSetpoint(
+          motorRotTarget,
+          SparkBase.ControlType.kMAXMotionPositionControl);
     }
-  /**
-   * Call this when the intake is physically all the way UP (hard stop),
-   * so Up becomes 0.
-   */
+  }
+
+  /** Zero encoder when intake is physically UP */
   public void zeroUpHere() {
-    pivot.setPosition(0.0); // motor sensor position becomes 0 rotations
+    encoder.setPosition(0.0);
     targetDeg = PivotConstants.kUpDeg;
   }
 
-  /** Pivot angle in degrees (based on motor rotations and kMotorRotPerDeg). */
+  /** Current pivot angle in degrees */
   public double getAngleDeg() {
-    double motorRot = pivot.getPosition().getValueAsDouble(); // rotations
-    return motorRot / PivotConstants.kMotorRotPerDeg;
+    return encoder.getPosition() / PivotConstants.kMotorRotPerDeg;
   }
 
-  /** Command pivot angle in degrees (Up = 0). */
+  /** Move to angle and HOLD it */
   public void setAngleDeg(double angleDeg) {
-    angleDeg = MathUtil.clamp(angleDeg, PivotConstants.kMinDeg, PivotConstants.kMaxDeg);
-    targetDeg = angleDeg;
+    angleDeg = MathUtil.clamp(
+        angleDeg,
+        PivotConstants.kMinDeg,
+        PivotConstants.kMaxDeg);
 
-    double motorRotTarget = angleDeg * PivotConstants.kMotorRotPerDeg;
-    pivot.setControl(mm.withPosition(motorRotTarget));
+    targetDeg = angleDeg;
+    holdAt(angleDeg);
+  }
+  public void IntakeDown() {
+    setAngleDeg(PivotConstants.kDownDeg);
+  }
+  public void IntakeUp() {
+    setAngleDeg(PivotConstants.kUpDeg);
   }
 
-  /** Manual percent output (use small values for testing). */
+  /** Hold wherever the pivot currently is */
+  public void holdCurrent() {
+    targetDeg = getAngleDeg();
+    holdAt(targetDeg);
+  }
+
+  private void holdAt(double angleDeg) {
+    holding = true;
+
+    double motorRotTarget =
+        angleDeg * PivotConstants.kMotorRotPerDeg;
+
+    controller.setSetpoint(
+        motorRotTarget,
+        SparkBase.ControlType.kMAXMotionPositionControl);
+  }
+
+  /** Manual control (disables hold) */
   public void setPercent(double percent) {
+    holding = false;
     pivot.set(percent);
   }
 
   public void stop() {
+    holding = false;
     pivot.stopMotor();
   }
 
-  public double getTargetDeg() {
-    return targetDeg;
-  }
-
   public boolean atSetpoint() {
-    return Math.abs(getAngleDeg() - targetDeg) <= PivotConstants.kToleranceDeg;
+    return Math.abs(getAngleDeg() - targetDeg)
+        <= PivotConstants.kToleranceDeg;
   }
 }
