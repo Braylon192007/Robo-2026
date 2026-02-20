@@ -46,8 +46,11 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   // The robot's subsystems and commands are defined here...
   public final IntakePivotSubsystem m_intakePivotSubsystem = new IntakePivotSubsystem();
+  public final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
   private final HoodSubsystem m_hoodSubsystem = new HoodSubsystem();
   public final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
+  public final ConveyorSubsystem m_conveyorSubsystem = new ConveyorSubsystem();
+  public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
@@ -90,25 +93,34 @@ public class RobotContainer {
 
     drivetrain.registerTelemetry(logger::telemeterize);
     m_operatorController.y()
-    .whileTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setPercent(.5)))
-    .onFalse(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.stop()));
+    .onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(120)));
 
     m_operatorController.a()
-    .whileTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setPercent(-.5)))
-    .onFalse(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.stop()));
+    .onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(30)));
+
 
     m_operatorController.x()
-    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(.5)))
+    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(1)))
     .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
 
     m_operatorController.b()
-    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(-.5)))
+    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(-1)))
     .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
 
-    m_driverController.rightTrigger()
-    .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY() * MaxSpeed, () -> -m_driverController.getLeftX() * MaxSpeed));
+    //m_driverController.rightTrigger()
+    //.whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY() * MaxSpeed, () -> -m_driverController.getLeftX() * MaxSpeed));
 
+    m_driverController.leftTrigger()
+    .whileTrue(new ConveyorForward(m_conveyorSubsystem)); 
+     //also make the indexer run to feed balls into the shooter
+    m_driverController.leftTrigger()
+    .whileTrue(new FeedBall(m_indexerSubsystem));
+
+    m_driverController.rightBumper()
+    .whileTrue(new IntakeIn(m_intakeSubsystem));
   }
+
+
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

@@ -32,7 +32,7 @@ public class Robot extends TimedRobot {
     autoPath.setDefaultOption("Test", "Test");
     flywheelRPM.setDefaultOption("Flywheel RPM:", 0.0);
     SmartDashboard.putData("Auto Path", autoPath);
-    SmartDashboard.putData("Flywheel RPM", flywheelRPM);
+    SmartDashboard.putNumber("Flywheel RPM", flywheelRPM.getSelected());
     m_robotContainer = new RobotContainer();
   }
 
@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
     SmartDashboard.putString("Auto Path Selected", autoPath.getSelected());
-    SmartDashboard.putNumber("Flywheel RPM", flywheelRPM.getSelected());
+    
     m_robotContainer.m_shooterSubsystem.setFlywheelRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
   }
 

@@ -34,7 +34,7 @@ public final class Constants {
 
     // Pulse widths (microseconds)
     public static final int kMinPulseUs    = 900;
-    public static final int kCenterPulseUs = 1275;
+    public static final int kCenterPulseUs = 1262;
     public static final int kMaxPulseUs    = 1625;
 
     // Stroke range (mm) of your actuator
@@ -150,8 +150,8 @@ public final class Constants {
     public static final boolean kInverted = false;
 
     // Speeds (tune on robot)
-    public static final double kFeedSpeed = 0.85;     // hopper -> indexer
-    public static final double kReverseSpeed = -0.85; // clear jams / eject
+    public static final double kFeedSpeed = 0.90;     // hopper -> indexer
+    public static final double kReverseSpeed = -0.90; // clear jams / eject
 
     // Current limit (NEO Vortex is strong — limit it)
     public static final int kCurrentLimit = 50;
@@ -164,11 +164,11 @@ public final class Constants {
     public static final boolean kInverted = false;
 
     // Speeds (tune)
-    public static final double kFeedSpeed = 0.70;     // up into shooter (compression load)
-    public static final double kReverseSpeed = -0.60; // clear jam / back ball out
+    public static final double kFeedSpeed = 1;     // up into shooter (compression load)
+    public static final double kReverseSpeed = -1; // clear jam / back ball out
 
     // Current limiting helps a LOT with compression/jams
-    public static final int kCurrentLimit = 45;
+    public static final int kCurrentLimit = 100;
 
     // Optional ramp so it doesn't spike hard into compression
     public static final double kOpenLoopRampRate = 0.08;
