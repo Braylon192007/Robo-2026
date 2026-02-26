@@ -34,6 +34,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("Auto Path", autoPath);
     SmartDashboard.putNumber("Flywheel RPM", flywheelRPM.getSelected());
     m_robotContainer = new RobotContainer();
+    SmartDashboard.putNumber("Climber Position", m_robotContainer.m_climberSubsystem.getPosition());
+    
   }
 
   /**
@@ -52,7 +54,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
     SmartDashboard.putString("Auto Path Selected", autoPath.getSelected());
     
-    m_robotContainer.m_shooterSubsystem.setFlywheelRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
+    //m_robotContainer.m_shooterSubsystem.setFlywheelRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

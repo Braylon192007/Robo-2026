@@ -47,10 +47,11 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public final IntakePivotSubsystem m_intakePivotSubsystem = new IntakePivotSubsystem();
   public final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
-  private final HoodSubsystem m_hoodSubsystem = new HoodSubsystem();
+  public final HoodSubsystem m_hoodSubsystem = new HoodSubsystem();
   public final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
   public final ConveyorSubsystem m_conveyorSubsystem = new ConveyorSubsystem();
   public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
+  public final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
@@ -92,32 +93,56 @@ public class RobotContainer {
     m_driverController.y().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
     drivetrain.registerTelemetry(logger::telemeterize);
-    m_operatorController.y()
-    .onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(120)));
+    //m_driverController.leftBumper()
+    //.onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(120)));
 
-    m_operatorController.a()
+    m_driverController.a()
     .onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(30)));
 
 
-    m_operatorController.x()
-    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(1)))
+    m_driverController.x()
+    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(.4)))
     .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
 
-    m_operatorController.b()
-    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(-1)))
+    m_driverController.b()
+    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(-.4)))
     .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
 
     //m_driverController.rightTrigger()
     //.whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY() * MaxSpeed, () -> -m_driverController.getLeftX() * MaxSpeed));
 
-    m_driverController.leftTrigger()
-    .whileTrue(new ConveyorForward(m_conveyorSubsystem)); 
-     //also make the indexer run to feed balls into the shooter
-    m_driverController.leftTrigger()
-    .whileTrue(new FeedBall(m_indexerSubsystem));
 
+    m_driverController.leftTrigger()
+    .whileTrue(new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
+
+    m_driverController.rightTrigger()
+    .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(4800)))
+    .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
     m_driverController.rightBumper()
     .whileTrue(new IntakeIn(m_intakeSubsystem));
+
+    //Actual Drive Commands
+    /*
+    m_driverController.a()
+    .whileTrue(new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
+
+    m_driverController.rightTrigger()
+    .whileTrue(new SetShooterSpeedFromPosition(m_shooterSubsystem, m_hoodSubsystem, () -> drivetrain.getState().Pose.getTranslation()));
+
+    m_driverController.rightBumper()
+    .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY() * MaxSpeed, () -> -m_driverController.getLeftX() * MaxSpeed));
+
+    m_driverController.leftTrigger()
+    .whileTrue(new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
+
+    m_driverController.povDown()
+    .whileTrue(new ReverseIndexer(m_indexerSubsystem));
+
+    m_driverController.povUp()
+    .whileTrue(new ClimbUp(m_climberSubsystem));
+    m_driverController.povRight()
+    .whileTrue(new Climb(m_climberSubsystem));
+    */
   }
 
 

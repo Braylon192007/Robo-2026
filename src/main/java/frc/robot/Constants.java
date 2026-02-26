@@ -58,7 +58,7 @@ public final class Constants {
 
   public static class ShooterConstants {
     // Hardware
-    public static final int kShooterMotorCAN = 7; // <-- change
+    public static final int kShooterMotorCAN = 7; 
     public static final boolean kMotorInverted = false;
 
     // Flywheel geometry
@@ -112,7 +112,7 @@ public final class Constants {
     public static final Translation2d kRedScoreXY  = new Translation2d(11.984, 4.072);
 
     public static final double kTargetHeightMeters = 1.8288; // 6 ft
-    public static final double kShooterExitHeightMeters = 0.4826;
+    public static final double kShooterExitHeightMeters = 0.5334;
 
     public static final double kMaxApexHeightMeters = 2.4384; // 8 ft
     public static final double kAngleStepDeg = 0.5;
@@ -139,7 +139,7 @@ public final class Constants {
     public static final boolean kInverted = false;
 
     // Speeds (tune on robot)
-    public static final double kIntakeSpeed = 0.9;   // fast pull-in
+    public static final double kIntakeSpeed = 1;   // fast pull-in
     public static final double kOuttakeSpeed = -0.9; // fast spit-out
 
     // Safety
@@ -158,6 +158,13 @@ public final class Constants {
 
     // Optional ramp rate (keeps it snappy but less violent)
     public static final double kOpenLoopRampRate = 0.05;
+  }
+  public static class ClimberConstants {
+    public static final int kClimberMotorCAN = 8; // <-- change
+    public static final boolean kInverted = false;
+    public static final double kClimbSpeed = 1.0; // <-- change
+    public static final int kCurrentLimit = 40; // NEO 550 safe-ish limit
+    public static final double kOpenLoopRampRate = 0.1; // optional
   }
   public static class IndexerConstants {
     public static final int kIndexerMotorCAN = 5; // <-- change
