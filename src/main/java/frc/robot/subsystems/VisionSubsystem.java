@@ -36,9 +36,7 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   private final String[] limelights = {
-      VisionConstants.kLLFront,
-      VisionConstants.kLLLeft,
-      VisionConstants.kLLRight
+      VisionConstants.kLLFront
   };
 
   /**

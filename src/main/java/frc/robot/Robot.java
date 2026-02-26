@@ -30,11 +30,12 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     autoPath.setDefaultOption("Test", "Test");
+    autoPath.addOption("Outpost", "Outpost");
     flywheelRPM.setDefaultOption("Flywheel RPM:", 0.0);
     SmartDashboard.putData("Auto Path", autoPath);
     SmartDashboard.putNumber("Flywheel RPM", flywheelRPM.getSelected());
     m_robotContainer = new RobotContainer();
-    SmartDashboard.putNumber("Climber Position", m_robotContainer.m_climberSubsystem.getPosition());
+    
     
   }
 
@@ -46,6 +47,10 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
+  public void robotInit() {
+    m_robotContainer.drivetrain.configureAutoBuilder();
+  }
+  @Override
   public void robotPeriodic() {
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
@@ -53,13 +58,18 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
     SmartDashboard.putString("Auto Path Selected", autoPath.getSelected());
+    SmartDashboard.putNumber("Climber Position", m_robotContainer.m_climberSubsystem.getPosition());
+    SmartDashboard.putNumber("X Position", m_robotContainer.drivetrain.getState().Pose.getX());
+    SmartDashboard.putNumber("Y Position", m_robotContainer.drivetrain.getState().Pose.getY());
+    SmartDashboard.putNumber("Rotation", m_robotContainer.drivetrain.getState().Pose.getRotation().getDegrees());
     
     //m_robotContainer.m_shooterSubsystem.setFlywheelRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -67,7 +77,6 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_robotContainer.setupAutoBuilder();
     m_autonomousCommand = m_robotContainer.getAutonomousCommand(autoPath.getSelected());
 
     // schedule the autonomous command (example)
