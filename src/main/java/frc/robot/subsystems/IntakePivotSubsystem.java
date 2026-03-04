@@ -1,14 +1,10 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-
-import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 
@@ -23,60 +19,59 @@ public class IntakePivotSubsystem extends SubsystemBase {
   private final SparkMax pivot =
       new SparkMax(PivotConstants.kPivotMotorCAN, MotorType.kBrushless);
 
-  private final SparkClosedLoopController controller =
-      pivot.getClosedLoopController();
-
   private final RelativeEncoder encoder = pivot.getEncoder();
 
+  // Simple open-loop "drive down" settings
+  private static final double kDownPower = 0.35;          // tune this
+  private static final double kUpPower = -0.35;           // tune if you want up later
+  private static final double kStopWindowDeg = 1.5;       // stop when within this of target
+
   private double targetDeg = PivotConstants.kUpDeg;
-  private boolean holding = true;
+  private boolean movingToTarget = false;
 
   public IntakePivotSubsystem() {
-
     SparkMaxConfig config = new SparkMaxConfig();
-
     config.inverted(PivotConstants.kMotorInverted);
-    config.idleMode(IdleMode.kBrake);
+    config.idleMode(IdleMode.kBrake); // brake helps "bumper holds it"
     config.smartCurrentLimit(PivotConstants.kCurrentLimitA);
-
-    // PID
-    config.closedLoop
-        .pid(
-            PivotConstants.kP,
-            PivotConstants.kI,
-            PivotConstants.kD)
-        .outputRange(-1.0, 1.0);
-
-    // MAXMotion settings
-    config.closedLoop.maxMotion
-        .cruiseVelocity(PivotConstants.kCruiseRotPerSec)
-        .maxAcceleration(PivotConstants.kAccelRotPerSec2)
-        .allowedProfileError(PivotConstants.kAllowedProfileErrorRot);
 
     pivot.configure(
         config,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
 
-    // Zero on boot (assumes robot powers on with intake UP)
+    // Optional: assume robot boots with intake UP, so set encoder to "up"
     zeroUpHere();
-    holdAt(targetDeg);
   }
 
   @Override
   public void periodic() {
     SmartDashboard.putNumber("IntakePivot/AngleDeg", getAngleDeg());
     SmartDashboard.putNumber("IntakePivot/TargetDeg", targetDeg);
-    SmartDashboard.putBoolean("IntakePivot/Holding", holding);
+    SmartDashboard.putBoolean("IntakePivot/MovingToTarget", movingToTarget);
 
-    // Re-assert hold every loop so bumps are corrected immediately
-    if (holding) {
-      double motorRotTarget =
-          targetDeg * PivotConstants.kMotorRotPerDeg;
+    if (!movingToTarget) {
+      return;
+    }
 
-      controller.setSetpoint(
-          motorRotTarget,
-          SparkBase.ControlType.kMAXMotionPositionControl);
+    double currentDeg = getAngleDeg();
+    double errorDeg = targetDeg - currentDeg;
+
+    // Stop when close enough
+    if (Math.abs(errorDeg) <= kStopWindowDeg) {
+      pivot.stopMotor();
+      movingToTarget = false;
+      return;
+    }
+
+    // Simple "bang-bang" direction control
+    // NOTE: If your sign is backwards, swap kDownPower/kUpPower or flip the comparisons.
+    if (errorDeg > 0.0) {
+      // need to increase angle -> go "down" (usually)
+      pivot.set(-kDownPower);
+    } else {
+      // need to decrease angle -> go "up" (usually)
+      pivot.set(-kUpPower);
     }
   }
 
@@ -84,6 +79,8 @@ public class IntakePivotSubsystem extends SubsystemBase {
   public void zeroUpHere() {
     encoder.setPosition(0.0);
     targetDeg = PivotConstants.kUpDeg;
+    movingToTarget = false;
+    pivot.stopMotor();
   }
 
   /** Current pivot angle in degrees */
@@ -91,53 +88,34 @@ public class IntakePivotSubsystem extends SubsystemBase {
     return encoder.getPosition() / PivotConstants.kMotorRotPerDeg;
   }
 
-  /** Move to angle and HOLD it */
-  public void setAngleDeg(double angleDeg) {
-    angleDeg = MathUtil.clamp(
-        angleDeg,
-        PivotConstants.kMinDeg,
-        PivotConstants.kMaxDeg);
-
-    targetDeg = angleDeg;
-    holdAt(angleDeg);
-  }
-  public void IntakeDown() {
-    setAngleDeg(PivotConstants.kDownDeg);
-  }
-  public void IntakeUp() {
-    setAngleDeg(PivotConstants.kUpDeg);
+  /** Move to a target angle using simple open-loop power, then stop */
+  public void setAngleDegSimple(double angleDeg) {
+    targetDeg = MathUtil.clamp(angleDeg, PivotConstants.kMinDeg, PivotConstants.kMaxDeg);
+    movingToTarget = true;
   }
 
-  /** Hold wherever the pivot currently is */
-  public void holdCurrent() {
-    targetDeg = getAngleDeg();
-    holdAt(targetDeg);
+  /** Call this to go to the down position (simple, no holding) */
+  public void intakeDown() {
+    setAngleDegSimple(PivotConstants.kDownDeg);
   }
 
-  private void holdAt(double angleDeg) {
-    holding = true;
-
-    double motorRotTarget =
-        angleDeg * PivotConstants.kMotorRotPerDeg;
-
-    controller.setSetpoint(
-        motorRotTarget,
-        SparkBase.ControlType.kMAXMotionPositionControl);
+  /** Optional: simple up */
+  public void intakeUp() {
+    setAngleDegSimple(PivotConstants.kUpDeg);
   }
 
-  /** Manual control (disables hold) */
+  /** Manual control (cancels any move-to-target) */
   public void setPercent(double percent) {
-    holding = false;
+    movingToTarget = false;
     pivot.set(percent);
   }
 
   public void stop() {
-    holding = false;
+    movingToTarget = false;
     pivot.stopMotor();
   }
 
-  public boolean atSetpoint() {
-    return Math.abs(getAngleDeg() - targetDeg)
-        <= PivotConstants.kToleranceDeg;
+  public boolean atTarget() {
+    return Math.abs(getAngleDeg() - targetDeg) <= kStopWindowDeg;
   }
 }

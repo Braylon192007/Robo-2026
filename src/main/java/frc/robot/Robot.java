@@ -20,6 +20,7 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private SendableChooser<String> autoPath = new SendableChooser<>();
   private final SendableChooser<Double> flywheelRPM = new SendableChooser<>();
+  private final SendableChooser<Double> hoodStroke = new SendableChooser<>();
   private final RobotContainer m_robotContainer;
 
   /**
@@ -32,8 +33,10 @@ public class Robot extends TimedRobot {
     autoPath.setDefaultOption("Test", "Test");
     autoPath.addOption("Outpost", "Outpost");
     flywheelRPM.setDefaultOption("Flywheel RPM:", 0.0);
+    hoodStroke.setDefaultOption("Hood Stroke:", 30.0);
     SmartDashboard.putData("Auto Path", autoPath);
     SmartDashboard.putNumber("Flywheel RPM", flywheelRPM.getSelected());
+    SmartDashboard.putNumber("Hood Stroke", hoodStroke.getSelected());
     m_robotContainer = new RobotContainer();
     
     
@@ -58,10 +61,13 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
     SmartDashboard.putString("Auto Path Selected", autoPath.getSelected());
-    SmartDashboard.putNumber("Climber Position", m_robotContainer.m_climberSubsystem.getPosition());
+    //SmartDashboard.putNumber("Climber Position", m_robotContainer.m_climberSubsystem.getPosition());
+    SmartDashboard.putNumber("Intake Pivot Position", m_robotContainer.m_intakePivotSubsystem.getAngleDeg());
     SmartDashboard.putNumber("X Position", m_robotContainer.drivetrain.getState().Pose.getX());
     SmartDashboard.putNumber("Y Position", m_robotContainer.drivetrain.getState().Pose.getY());
     SmartDashboard.putNumber("Rotation", m_robotContainer.drivetrain.getState().Pose.getRotation().getDegrees());
+    m_robotContainer.m_hoodSubsystem.setStrokeMm(SmartDashboard.getNumber("Hood Stroke", 30.0));
+    //m_robotContainer.m_shooterSubsystem.setFlywheelRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
     
     //m_robotContainer.m_shooterSubsystem.setFlywheelRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
   }

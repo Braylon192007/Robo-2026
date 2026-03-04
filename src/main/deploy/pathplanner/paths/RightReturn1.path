@@ -3,41 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.6825113636363636,
-        "y": 3.5918068181818184
+        "x": 7.791269614835947,
+        "y": 5.400028530670471
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.410799523408116,
-        "y": 2.556714093502789
+        "x": 5.77283880171184,
+        "y": 1.466676176890156
       },
       "isLocked": false,
       "linkedName": "RightPickupFirst"
     },
     {
       "anchor": {
-        "x": 3.9308295454545457,
-        "y": 0.5822159090909098
+        "x": 3.8837945791726103,
+        "y": 0.7550499286733237
       },
       "prevControl": {
-        "x": 8.277402924923033,
-        "y": 0.47872606672261286
+        "x": 8.62291798140446,
+        "y": 0.6345637404809855
       },
       "nextControl": {
-        "x": 2.632170454545454,
-        "y": 0.613136363636364
+        "x": 2.3570328102710407,
+        "y": 0.793865905848788
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.7251704545454545,
-        "y": 1.7778068181818183
+        "x": 2.809885877318117,
+        "y": 1.9842225392296724
       },
       "prevControl": {
-        "x": 2.230204545454545,
-        "y": 1.1593977272727272
+        "x": 3.3149199682272075,
+        "y": 1.3658134483205813
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,7 +50,21 @@
       "rotationDegrees": 0.0
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.37386804657179784,
+      "maxWaypointRelativePos": 1.0724450194049155,
+      "constraints": {
+        "maxVelocity": 2.5,
+        "maxAcceleration": 4.0,
+        "maxAngularVelocity": 600.0,
+        "maxAngularAcceleration": 1000.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -63,7 +77,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 37.0
+    "rotation": 45.88140399658208
   },
   "reversed": false,
   "folder": "Right Auto",

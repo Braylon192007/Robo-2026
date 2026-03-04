@@ -10,6 +10,7 @@ import frc.robot.subsystems.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import static edu.wpi.first.units.Units.*;
@@ -17,6 +18,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -51,7 +53,7 @@ public class RobotContainer {
   public final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
   public final ConveyorSubsystem m_conveyorSubsystem = new ConveyorSubsystem();
   public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
-  public final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
+  //public final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
@@ -61,6 +63,7 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
+    
   }
   
   /**
@@ -91,11 +94,13 @@ public class RobotContainer {
     drivetrain.registerTelemetry(logger::telemeterize);
     //m_driverController.leftBumper()
     //.onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(120)));
-
+/* 
     m_driverController.a()
-    .onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(30)));
+    .onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(40)));
 
-
+    m_driverController.y()
+    .onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(110)));
+    */
     m_driverController.x()
     .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(.4)))
     .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
@@ -111,24 +116,32 @@ public class RobotContainer {
     m_driverController.leftTrigger()
     .whileTrue(new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
 
-    m_driverController.rightTrigger()
-    .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(4800)))
-    .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
-    m_driverController.rightBumper()
-    .whileTrue(new IntakeIn(m_intakeSubsystem));
-
-    //Actual Drive Commands
-    /*
+    //m_driverController.rightTrigger()
+    //.whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(4800)))
+    //.onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
+    m_driverController.leftBumper()
+    .onTrue(new DropIntake(m_intakePivotSubsystem));
     m_driverController.a()
     .whileTrue(new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
 
+    m_driverController.rightTrigger()
+    .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY(), () -> -m_driverController.getLeftX()));
+    m_driverController.rightTrigger()
+    .whileTrue(new SetShooterSpeedFromPosition(m_shooterSubsystem, () -> drivetrain.getState().Pose.getTranslation()));
+
+    //Actual Drive Commands
+    /* 
+    m_driverController.a()
+    .whileTrue(new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
+    m_driverController.b()
+    .whileTrue(new IntakeOut(m_intakeSubsystem, m_conveyorSubsystem));
     m_driverController.rightTrigger()
     .whileTrue(new SetShooterSpeedFromPosition(m_shooterSubsystem, m_hoodSubsystem, () -> drivetrain.getState().Pose.getTranslation()));
 
     m_driverController.rightBumper()
     .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY() * MaxSpeed, () -> -m_driverController.getLeftX() * MaxSpeed));
 
-    m_driverController.leftTrigger()
+    m_driverController.leftTrigger().and(m_driverController.rightTrigger()) //Only run when right trigger is held as well to prevent accidental activation of indexer when trying to shoot
     .whileTrue(new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
 
     m_driverController.povDown()
@@ -149,6 +162,16 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand(String autoName) {
+    NamedCommands.registerCommand("IntakeDown", new InstantCommand(() -> m_intakePivotSubsystem.setPercent(-.4), m_intakePivotSubsystem));
+    NamedCommands.registerCommand("IntakeStop", new InstantCommand(() -> m_intakePivotSubsystem.stop(), m_intakePivotSubsystem));
+    NamedCommands.registerCommand("Intake", new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
+    NamedCommands.registerCommand("StopIntake", new InstantCommand(() -> {
+      m_intakeSubsystem.stop();
+      m_conveyorSubsystem.stop();
+    }, m_intakeSubsystem, m_conveyorSubsystem));
+    NamedCommands.registerCommand("Charge", new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(4500), m_shooterSubsystem));
+    NamedCommands.registerCommand("StopCharge", new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem));
+    NamedCommands.registerCommand("Feed", new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
     Command autoCommand = AutoBuilder.buildAuto(autoName);
     // An example command will be run in autonomous
     return autoCommand;

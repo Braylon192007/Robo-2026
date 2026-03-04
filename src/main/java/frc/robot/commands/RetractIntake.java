@@ -14,11 +14,11 @@ public class RetractIntake extends Command {
 
   @Override
   public void initialize() {
-    pivot.setAngleDeg(PivotConstants.kUpDeg); // 0°
+    pivot.intakeUp(); // 0°
   }
 
   @Override
   public boolean isFinished() {
-    return pivot.atSetpoint();
+    return pivot.atTarget();
   }
 }

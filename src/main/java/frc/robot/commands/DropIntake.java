@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IntakePivotSubsystem;
-import frc.robot.Constants.PivotConstants;
 
 public class DropIntake extends Command {
 
@@ -15,11 +14,19 @@ public class DropIntake extends Command {
 
   @Override
   public void initialize() {
-    pivot.setAngleDeg(PivotConstants.kDownDeg); // 75°
+    // Start the movement ONCE
+    pivot.intakeUp();
   }
 
   @Override
   public boolean isFinished() {
-    return pivot.atSetpoint();
+    // Finish when we reach the target
+    return pivot.atTarget();
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+    // Stop motor when done
+    pivot.stop();
   }
 }

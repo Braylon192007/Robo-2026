@@ -150,8 +150,8 @@ public final class Constants {
     public static final boolean kInverted = false;
 
     // Speeds (tune on robot)
-    public static final double kFeedSpeed = 0.90;     // hopper -> indexer
-    public static final double kReverseSpeed = -0.90; // clear jams / eject
+    public static final double kFeedSpeed = 0.15;     // hopper -> indexer
+    public static final double kReverseSpeed = -0.25; // clear jams / eject
 
     // Current limit (NEO Vortex is strong — limit it)
     public static final int kCurrentLimit = 50;
@@ -191,7 +191,7 @@ public final class Constants {
   // Angle limits (degrees)
   // Define UP as 0 deg
   public static final double kUpDeg = 0.0;
-  public static final double kDownDeg = 80.0;
+  public static final double kDownDeg = -670.0;
 
   public static final double kMinDeg = kUpDeg;
   public static final double kMaxDeg = kDownDeg;
