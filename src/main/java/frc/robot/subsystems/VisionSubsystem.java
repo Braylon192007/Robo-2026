@@ -72,7 +72,7 @@ public class VisionSubsystem extends SubsystemBase {
       double xyStd = computeXYStdDevs(est.tagCount, est.avgTagDist);
 
       // Trust gyro for heading: make theta std dev huge. :contentReference[oaicite:9]{index=9}
-      Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStd, xyStd, VisionConstants.kThetaStdRad);
+      Matrix<N3, N1> stdDevs = VecBuilder.fill(0.01, 0.01, VisionConstants.kThetaStdRad);
 
       out.add(new VisionObservation(pose, ts, stdDevs));
     }

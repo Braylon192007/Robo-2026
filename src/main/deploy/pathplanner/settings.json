@@ -3,6 +3,7 @@
   "robotLength": 0.876,
   "holonomicMode": true,
   "pathFolders": [
+    "LeftAuto",
     "Right Auto"
   ],
   "autoFolders": [],

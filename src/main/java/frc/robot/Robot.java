@@ -31,7 +31,7 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     autoPath.setDefaultOption("Test", "Test");
-    autoPath.addOption("Outpost", "Outpost");
+    autoPath.addOption("LeftAuto", "LeftAuto");
     flywheelRPM.setDefaultOption("Flywheel RPM:", 0.0);
     hoodStroke.setDefaultOption("Hood Stroke:", 30.0);
     SmartDashboard.putData("Auto Path", autoPath);
@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    m_robotContainer.drivetrain.configureAutoBuilder();
+    //m_robotContainer.drivetrain.configureAutoBuilder();
   }
   @Override
   public void robotPeriodic() {

@@ -143,7 +143,7 @@ public final class Constants {
     public static final double kOuttakeSpeed = -0.9; // fast spit-out
 
     // Safety
-    public static final int kCurrentLimit = 30; // NEO 550 safe-ish limit
+    public static final int kCurrentLimit = 50; // NEO 550 safe-ish limit
   }
   public static class ConveyorConstants {
     public static final int kConveyorMotorCAN = 2; // <-- change

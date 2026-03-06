@@ -123,7 +123,9 @@ public class RobotContainer {
     .onTrue(new DropIntake(m_intakePivotSubsystem));
     m_driverController.a()
     .whileTrue(new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
-
+    m_driverController.rightBumper()
+    .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(4600)))
+    .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
     m_driverController.rightTrigger()
     .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY(), () -> -m_driverController.getLeftX()));
     m_driverController.rightTrigger()
@@ -170,8 +172,20 @@ public class RobotContainer {
       m_conveyorSubsystem.stop();
     }, m_intakeSubsystem, m_conveyorSubsystem));
     NamedCommands.registerCommand("Charge", new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(4500), m_shooterSubsystem));
-    NamedCommands.registerCommand("StopCharge", new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem));
-    NamedCommands.registerCommand("Feed", new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
+    NamedCommands.registerCommand("StopShooter", new InstantCommand(() -> {
+      m_shooterSubsystem.setFlywheelRPM(0);
+      m_conveyorSubsystem.stop();
+      m_indexerSubsystem.stop();
+    }, m_shooterSubsystem, m_conveyorSubsystem, m_indexerSubsystem));
+    NamedCommands.registerCommand("ConveyorGo", new InstantCommand(() -> m_conveyorSubsystem.feed(), m_conveyorSubsystem));
+    NamedCommands.registerCommand("Feed", new InstantCommand(() -> {
+      m_indexerSubsystem.feed();
+      m_conveyorSubsystem.feed();
+    }, m_indexerSubsystem, m_conveyorSubsystem));
+    NamedCommands.registerCommand("StopFeed", new InstantCommand(() -> {
+      m_indexerSubsystem.stop();
+      m_conveyorSubsystem.stop();
+    }, m_indexerSubsystem, m_conveyorSubsystem));
     Command autoCommand = AutoBuilder.buildAuto(autoName);
     // An example command will be run in autonomous
     return autoCommand;
