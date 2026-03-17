@@ -23,74 +23,60 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
   }
+
   public static class HoodConstants {
+    public static final int kHoodMotorCAN = 14;
 
-    // Servo Hub (CAN)
-    public static final int kServoHubCanId = 4; // <-- change if needed
+    public static final boolean kMotorInverted = false;
 
-    // Two linear servos, same mechanism
-    public static final ChannelId kHoodChannelIdLeft  = ChannelId.kChannelId0;
-    public static final ChannelId kHoodChannelIdRight = ChannelId.kChannelId1;
+    // 100 motor rotations = 1 hood/output rotation
+    public static final double kGearRatio = 100.0;
 
-    // Pulse widths (microseconds)
-    public static final int kMinPulseUs    = 900;
-    public static final int kCenterPulseUs = 1262;
-    public static final int kMaxPulseUs    = 1625;
+    // CHANGE THESE TO YOUR REAL HOOD RANGE
+    public static final double kMinAngleDeg = 0.0;
+    public static final double kMaxAngleDeg = 90.0;
+    public static final double kStartingAngleDeg = 0.0;
 
-    // Stroke range (mm) of your actuator
-    public static final double kMinStrokeMm = 0.0;
-    public static final double kMaxStrokeMm = 140.0;
+    public static final double kAngleToleranceDeg = 1.0;
 
-    // If you map distance -> angle later (optional)
-    public static final double kMinAngleDeg = 55.0;
-    public static final double kMaxAngleDeg = 80.0;
-
-    // If one actuator is mirrored mechanically, you may need to invert one side.
-    // Start false. If one side moves opposite, set true.
-    public static final boolean kInvertRightPulse = false;
-
-    // Dashboard / logic tolerance (no real feedback unless you add it)
-    public static final double kStrokeToleranceMm = 1.0;
+    // Tune these
+    public static final double kP = 25.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kG = 0.0;
   }
+
 
   
 
 
   public static class ShooterConstants {
-    // Hardware
-    public static final int kShooterMotorCAN = 7; 
-    public static final boolean kMotorInverted = false;
+    public static final int kLeftShooterMotorCAN = 16;
+    public static final int kRightShooterMotorCAN = 15;
 
-    // Flywheel geometry
-    public static final double kFlywheelDiameterMeters = 0.1016; // 4 in
-    public static final double kFlywheelRadiusMeters = kFlywheelDiameterMeters / 2.0;
+    public static final boolean kLeftMotorInverted = false;
+    public static final boolean kRightMotorInverted = false;
 
-    // Gear ratio: motorRotations * kGearRatio = flywheelRotations
+    // true if the second shooter motor needs to spin opposite direction from master
+    public static final boolean kRightMotorOpposeMaster = true;
+
+    public static final double kP = 0.12;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kFF = 0.12;
+
+    public static final double kMinRPM = 0.0;
+    public static final double kMaxRPM = 6000.0;
+    public static final double kRPMTolerance = 100.0;
+
+    // flywheelRPM = motorRPM * kGearRatio
     public static final double kGearRatio = 1.0;
 
-    // Exit speed ~= wheel surface speed * this
-    public static final double kExitSpeedPerWheelSpeed = 0.85; // tune
-
-    // Limits
-    public static final double kMinRPM = 0;
-    public static final double kMaxRPM = 6000; // tune safe max
-
-    // Closed-loop (starter values; tune)
-    public static final double kP = 0.00025;
-    public static final double kI = 0.0;
-    public static final double kD = 0.00015;
-
-    // NOTE: velocityFF() is deprecated in REVLib in favor of feedForward config,
-    // but it still works on most 2025 builds. If it errors, tell me and I’ll swap to feedForward.
-    public static final double kFF = 0.00017;
-
-    // Ready tolerance
-    public static final double kRPMTolerance = 75.0;
+    public static final double kExitSpeedPerWheelSpeed = 1.0;
+    public static final double kFlywheelRadiusMeters = 0.0508;
   }
   public static class VisionConstants {
     public static final String kLLFront = "limelight-front";
-    public static final String kLLLeft  = "limelight-left";
-    public static final String kLLRight = "limelight-right";
 
     /** If robot is spinning faster than this, ignore vision updates (deg/sec). */
     public static final double kMaxYawRateDegPerSec = 720.0; // common rule of thumb :contentReference[oaicite:3]{index=3}
@@ -150,8 +136,8 @@ public final class Constants {
     public static final boolean kInverted = false;
 
     // Speeds (tune on robot)
-    public static final double kFeedSpeed = 0.15;     // hopper -> indexer
-    public static final double kReverseSpeed = -0.25; // clear jams / eject
+    public static final double kFeedSpeed = 0.65;     // hopper -> indexer
+    public static final double kReverseSpeed = -0.65; // clear jams / eject
 
     // Current limit (NEO Vortex is strong — limit it)
     public static final int kCurrentLimit = 50;
@@ -167,17 +153,22 @@ public final class Constants {
     public static final double kOpenLoopRampRate = 0.1; // optional
   }
   public static class IndexerConstants {
-    public static final int kIndexerMotorCAN = 5; // <-- change
-    public static final boolean kInverted = false;
+    public static final int kIndexerMotorCANTop = 5;
+    public static final int kIndexerMotorCANBottom = 4;
 
-    // Speeds (tune)
-    public static final double kFeedSpeed = 1;     // up into shooter (compression load)
-    public static final double kReverseSpeed = -1; // clear jam / back ball out
+    // Set these so the rollers spin opposite directions while both are told to "feed"
+    // One of these will likely need flipped after testing
+    public static final boolean kTopInverted = true;
+    public static final boolean kBottomInverted = false;
 
-    // Current limiting helps a LOT with compression/jams
-    public static final int kCurrentLimit = 100;
+    // Speeds
+    public static final double kFeedSpeed = 1.0;
+    public static final double kReverseSpeed = -1.0;
 
-    // Optional ramp so it doesn't spike hard into compression
+    // NEO 550 current limit
+    public static final int kCurrentLimit = 30;
+
+    // Optional ramp
     public static final double kOpenLoopRampRate = 0.08;
   }
   public static class PivotConstants {

@@ -1,13 +1,15 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.ResetMode;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkFlexConfig;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -15,35 +17,54 @@ import frc.robot.Constants.ShooterConstants;
 
 public class ShooterSubsystem extends SubsystemBase {
 
-  
+  private final TalonFX leftShooterMotor =
+      new TalonFX(ShooterConstants.kLeftShooterMotorCAN);
 
-  private final SparkFlex shooterMotor =
-      new SparkFlex(ShooterConstants.kShooterMotorCAN, MotorType.kBrushless);
+  private final TalonFX rightShooterMotor =
+      new TalonFX(ShooterConstants.kRightShooterMotorCAN);
 
-  private final RelativeEncoder encoder = shooterMotor.getEncoder();
-  private final SparkClosedLoopController pid = shooterMotor.getClosedLoopController();
+  private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
+  private final NeutralOut stopRequest = new NeutralOut();
 
   private double targetFlywheelRPM = 0.0;
 
   public ShooterSubsystem() {
-    // REVLib 2025+ uses config objects + configure()
-    SparkFlexConfig config = new SparkFlexConfig();
+    TalonFXConfiguration leftConfig = new TalonFXConfiguration();
+    TalonFXConfiguration rightConfig = new TalonFXConfiguration();
 
-    config.inverted(ShooterConstants.kMotorInverted);
+    leftConfig.Slot0 = new Slot0Configs()
+        .withKP(ShooterConstants.kP)
+        .withKI(ShooterConstants.kI)
+        .withKD(ShooterConstants.kD)
+        .withKV(ShooterConstants.kFF);
 
-    // Closed-loop gains live in the config now
-    config.closedLoop
-        .pid(ShooterConstants.kP, ShooterConstants.kI, ShooterConstants.kD)
-        .outputRange(-1.0, 1.0);
+    rightConfig.Slot0 = new Slot0Configs()
+        .withKP(ShooterConstants.kP)
+        .withKI(ShooterConstants.kI)
+        .withKD(ShooterConstants.kD)
+        .withKV(ShooterConstants.kFF);
 
-    // If this line errors on your exact REVLib version, tell me and I'll switch to:
-    // config.closedLoop.feedForward.<something...>
-    config.closedLoop.feedForward.kV(ShooterConstants.kFF);
+    leftConfig.MotorOutput = new MotorOutputConfigs()
+        .withNeutralMode(NeutralModeValue.Coast)
+        .withInverted(
+            ShooterConstants.kLeftMotorInverted
+                ? InvertedValue.Clockwise_Positive
+                : InvertedValue.CounterClockwise_Positive);
 
-    // Apply config:
-    // - Reset safe params so you're in a known state
-    // - Persist so it survives brownouts/power cycles
-    shooterMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    rightConfig.MotorOutput = new MotorOutputConfigs()
+        .withNeutralMode(NeutralModeValue.Coast)
+        .withInverted(
+            ShooterConstants.kRightMotorInverted
+                ? InvertedValue.Clockwise_Positive
+                : InvertedValue.CounterClockwise_Positive);
+
+    leftShooterMotor.getConfigurator().apply(leftConfig);
+    rightShooterMotor.getConfigurator().apply(rightConfig);
+
+    // Right follows left
+    rightShooterMotor.setControl(
+        new Follower(leftShooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));
+        
   }
 
   /** Sets flywheel RPM (NOT motor RPM). */
@@ -51,21 +72,23 @@ public class ShooterSubsystem extends SubsystemBase {
     flywheelRPM = MathUtil.clamp(flywheelRPM, ShooterConstants.kMinRPM, ShooterConstants.kMaxRPM);
     targetFlywheelRPM = flywheelRPM;
 
-    // Convert flywheel RPM -> motor RPM based on gear ratio
+    // Convert flywheel RPM -> motor RPS
     double motorRPM = flywheelRPM / ShooterConstants.kGearRatio;
+    double motorRPS = motorRPM / 60.0;
 
-    // REVLib 2025+: setSetpoint (setReference is deprecated)
-    pid.setSetpoint(motorRPM, SparkBase.ControlType.kVelocity);
+    leftShooterMotor.setControl(velocityRequest.withVelocity(motorRPS));
   }
 
   public void stop() {
     targetFlywheelRPM = 0.0;
-    shooterMotor.stopMotor();
+    leftShooterMotor.setControl(stopRequest);
+    rightShooterMotor.setControl(stopRequest);
   }
 
-  /** Returns flywheel RPM estimate from motor encoder RPM and gear ratio. */
+  /** Returns flywheel RPM estimate from motor encoder velocity and gear ratio. */
   public double getFlywheelRPM() {
-    double motorRPM = encoder.getVelocity(); // RPM
+    double motorRPS = leftShooterMotor.getVelocity().getValueAsDouble();
+    double motorRPM = motorRPS * 60.0;
     return motorRPM * ShooterConstants.kGearRatio;
   }
 

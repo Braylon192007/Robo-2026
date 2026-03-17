@@ -66,7 +66,6 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("X Position", m_robotContainer.drivetrain.getState().Pose.getX());
     SmartDashboard.putNumber("Y Position", m_robotContainer.drivetrain.getState().Pose.getY());
     SmartDashboard.putNumber("Rotation", m_robotContainer.drivetrain.getState().Pose.getRotation().getDegrees());
-    m_robotContainer.m_hoodSubsystem.setStrokeMm(SmartDashboard.getNumber("Hood Stroke", 30.0));
     //m_robotContainer.m_shooterSubsystem.setFlywheelRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));
     
     //m_robotContainer.m_shooterSubsystem.setFlywheelRPM(SmartDashboard.getNumber("Flywheel RPM", 0.0));

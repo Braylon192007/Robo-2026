@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
@@ -14,180 +10,145 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import static edu.wpi.first.units.Units.*;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.Telemetry;
 
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and trigger mappings) should be declared here.
- */
 public class RobotContainer {
-  private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+  private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+  private double MaxAngularRate = RotationsPerSecond.of(.75).in(RadiansPerSecond);
 
-    /* Setting up bindings for necessary control of the swerve drive platform */
-    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-    private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+  private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+      .withDeadband(MaxSpeed * 0.1)
+      .withRotationalDeadband(MaxAngularRate * 0.1)
+      .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-    private final Telemetry logger = new Telemetry(MaxSpeed);
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-  // The robot's subsystems and commands are defined here...
+  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+
+  private final Telemetry logger = new Telemetry(MaxSpeed);
+
+  public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   public final IntakePivotSubsystem m_intakePivotSubsystem = new IntakePivotSubsystem();
   public final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
   public final HoodSubsystem m_hoodSubsystem = new HoodSubsystem();
   public final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
   public final ConveyorSubsystem m_conveyorSubsystem = new ConveyorSubsystem();
   public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
-  //public final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
-  // Replace with CommandPS4Controller or CommandJoystick if needed
+
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
   private final CommandXboxController m_operatorController =
       new CommandXboxController(OperatorConstants.kOperatorControllerPort);
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+
+  private final Map<String, Command> autos = new HashMap<>();
+
   public RobotContainer() {
-    // Configure the trigger bindings
+    registerNamedCommands();
     configureBindings();
-    
+    buildAutos();
   }
-  
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
+
+  private void registerNamedCommands() {
+    NamedCommands.registerCommand("IntakeDown",
+        new InstantCommand(() -> m_intakePivotSubsystem.setPercent(-.4), m_intakePivotSubsystem));
+
+    NamedCommands.registerCommand("IntakeStop",
+        new InstantCommand(() -> m_intakePivotSubsystem.stop(), m_intakePivotSubsystem));
+
+    NamedCommands.registerCommand("Intake",
+        new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
+
+    NamedCommands.registerCommand("StopIntake",
+        new InstantCommand(() -> {
+          m_intakeSubsystem.stop();
+          m_conveyorSubsystem.stop();
+        }, m_intakeSubsystem, m_conveyorSubsystem));
+
+    NamedCommands.registerCommand("Charge",
+        new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(4500), m_shooterSubsystem));
+
+    NamedCommands.registerCommand("StopShooter",
+        new InstantCommand(() -> {
+          m_shooterSubsystem.setFlywheelRPM(0);
+          m_conveyorSubsystem.stop();
+          m_indexerSubsystem.stop();
+        }, m_shooterSubsystem, m_conveyorSubsystem, m_indexerSubsystem));
+
+    NamedCommands.registerCommand("ConveyorGo",
+        new InstantCommand(() -> m_conveyorSubsystem.feed(), m_conveyorSubsystem));
+
+    NamedCommands.registerCommand("Feed",
+        new InstantCommand(() -> {
+          m_indexerSubsystem.feed();
+          m_conveyorSubsystem.feed();
+        }, m_indexerSubsystem, m_conveyorSubsystem));
+
+    NamedCommands.registerCommand("StopFeed",
+        new InstantCommand(() -> {
+          m_indexerSubsystem.stop();
+          m_conveyorSubsystem.stop();
+        }, m_indexerSubsystem, m_conveyorSubsystem));
+  }
+
+  private void buildAutos() {
+    autos.put("Test", AutoBuilder.buildAuto("Test"));
+    autos.put("LeftAuto", AutoBuilder.buildAuto("LeftAuto"));
+  }
+
   private void configureBindings() {
     drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
+        drivetrain.applyRequest(() ->
+            drive.withVelocityX(-m_driverController.getLeftY() * MaxSpeed)
+                .withVelocityY(-m_driverController.getLeftX() * MaxSpeed)
+                .withRotationalRate(-m_driverController.getRightX() * MaxAngularRate)));
 
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-m_driverController.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-m_driverController.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-m_driverController.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
     final var idle = new SwerveRequest.Idle();
-        RobotModeTriggers.disabled().whileTrue(
-            drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        );
+    RobotModeTriggers.disabled().whileTrue(
+        drivetrain.applyRequest(() -> idle).ignoringDisable(true));
+
     m_driverController.y().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
     drivetrain.registerTelemetry(logger::telemeterize);
-    //m_driverController.leftBumper()
-    //.onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(120)));
-/* 
-    m_driverController.a()
-    .onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(40)));
 
-    m_driverController.y()
-    .onTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setStrokeMm(110)));
-    */
     m_driverController.x()
-    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(.4)))
-    .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
+        .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(.4)))
+        .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
 
     m_driverController.b()
-    .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(-.4)))
-    .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
-
-    //m_driverController.rightTrigger()
-    //.whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY() * MaxSpeed, () -> -m_driverController.getLeftX() * MaxSpeed));
-
+        .whileTrue(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.setPercent(-.4)))
+        .onFalse(m_intakePivotSubsystem.runOnce(() -> m_intakePivotSubsystem.stop()));
 
     m_driverController.leftTrigger()
-    .whileTrue(new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
+        .whileTrue(new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
 
-    //m_driverController.rightTrigger()
-    //.whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(4800)))
-    //.onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
     m_driverController.leftBumper()
-    .onTrue(new DropIntake(m_intakePivotSubsystem));
-    m_driverController.a()
-    .whileTrue(new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
-    m_driverController.rightBumper()
-    .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(4600)))
-    .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
-    m_driverController.rightTrigger()
-    .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY(), () -> -m_driverController.getLeftX()));
-    m_driverController.rightTrigger()
-    .whileTrue(new SetShooterSpeedFromPosition(m_shooterSubsystem, () -> drivetrain.getState().Pose.getTranslation()));
+        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(6000)))
+        .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
 
-    //Actual Drive Commands
-    /* 
     m_driverController.a()
-    .whileTrue(new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
-    m_driverController.b()
-    .whileTrue(new IntakeOut(m_intakeSubsystem, m_conveyorSubsystem));
-    m_driverController.rightTrigger()
-    .whileTrue(new SetShooterSpeedFromPosition(m_shooterSubsystem, m_hoodSubsystem, () -> drivetrain.getState().Pose.getTranslation()));
+        .whileTrue(new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
 
     m_driverController.rightBumper()
-    .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY() * MaxSpeed, () -> -m_driverController.getLeftX() * MaxSpeed));
+        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(4500)))
+        .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
 
-    m_driverController.leftTrigger().and(m_driverController.rightTrigger()) //Only run when right trigger is held as well to prevent accidental activation of indexer when trying to shoot
-    .whileTrue(new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
+    m_driverController.rightTrigger()
+        .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY(), () -> -m_driverController.getLeftX()));
 
-    m_driverController.povDown()
-    .whileTrue(new ReverseIndexer(m_indexerSubsystem));
-
-    m_driverController.povUp()
-    .whileTrue(new ClimbUp(m_climberSubsystem));
-    m_driverController.povRight()
-    .whileTrue(new Climb(m_climberSubsystem));
-    */
+    m_driverController.rightTrigger()
+        .whileTrue(new SetShooterSpeedFromPosition(m_shooterSubsystem, () -> drivetrain.getState().Pose.getTranslation()));
   }
 
-
-
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
   public Command getAutonomousCommand(String autoName) {
-    NamedCommands.registerCommand("IntakeDown", new InstantCommand(() -> m_intakePivotSubsystem.setPercent(-.4), m_intakePivotSubsystem));
-    NamedCommands.registerCommand("IntakeStop", new InstantCommand(() -> m_intakePivotSubsystem.stop(), m_intakePivotSubsystem));
-    NamedCommands.registerCommand("Intake", new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
-    NamedCommands.registerCommand("StopIntake", new InstantCommand(() -> {
-      m_intakeSubsystem.stop();
-      m_conveyorSubsystem.stop();
-    }, m_intakeSubsystem, m_conveyorSubsystem));
-    NamedCommands.registerCommand("Charge", new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(4500), m_shooterSubsystem));
-    NamedCommands.registerCommand("StopShooter", new InstantCommand(() -> {
-      m_shooterSubsystem.setFlywheelRPM(0);
-      m_conveyorSubsystem.stop();
-      m_indexerSubsystem.stop();
-    }, m_shooterSubsystem, m_conveyorSubsystem, m_indexerSubsystem));
-    NamedCommands.registerCommand("ConveyorGo", new InstantCommand(() -> m_conveyorSubsystem.feed(), m_conveyorSubsystem));
-    NamedCommands.registerCommand("Feed", new InstantCommand(() -> {
-      m_indexerSubsystem.feed();
-      m_conveyorSubsystem.feed();
-    }, m_indexerSubsystem, m_conveyorSubsystem));
-    NamedCommands.registerCommand("StopFeed", new InstantCommand(() -> {
-      m_indexerSubsystem.stop();
-      m_conveyorSubsystem.stop();
-    }, m_indexerSubsystem, m_conveyorSubsystem));
-    Command autoCommand = AutoBuilder.buildAuto(autoName);
-    // An example command will be run in autonomous
-    return autoCommand;
+    return autos.get(autoName);
   }
 }

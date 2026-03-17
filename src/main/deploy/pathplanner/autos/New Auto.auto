@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Right Start"
+                  "pathName": "New New New New New New Path"
                 }
               },
               {
@@ -55,13 +55,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "RightReturn1"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "StopIntake"
+                  "pathName": "New New New New New New New Path"
                 }
               },
               {
@@ -71,7 +65,13 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 1.5
+                        "waitTime": 2.0
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "StopIntake"
                       }
                     },
                     {
@@ -101,7 +101,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 5.0
+            "waitTime": 0.0
           }
         },
         {
@@ -111,13 +111,32 @@
           }
         },
         {
-          "type": "race",
+          "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "RightBack"
+                  "pathName": "New New New New New New New New Path"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "New New New New New New New New New Path"
                 }
               },
               {
@@ -133,7 +152,13 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "Intake"
+                        "name": "StopIntake"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "Charge"
                       }
                     }
                   ]
@@ -145,13 +170,13 @@
         {
           "type": "named",
           "data": {
-            "name": "StopIntake"
+            "name": "Feed"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "RightReturn"
+            "name": "ConveyorGo"
           }
         }
       ]

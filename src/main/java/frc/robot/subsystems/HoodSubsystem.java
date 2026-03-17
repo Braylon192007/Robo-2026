@@ -1,164 +1,109 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import frc.robot.Constants.HoodConstants;
-
-import com.revrobotics.REVLibError;
-import com.revrobotics.ResetMode;
-import com.revrobotics.servohub.ServoHub;
-import com.revrobotics.servohub.ServoChannel;
-import com.revrobotics.servohub.ServoChannel.ChannelId;
-import com.revrobotics.servohub.config.ServoHubConfig;
-import com.revrobotics.servohub.config.ServoChannelConfig;
 
 public class HoodSubsystem extends SubsystemBase {
 
-  private final ServoHub servoHub = new ServoHub(HoodConstants.kServoHubCanId);
+  private final TalonFX hoodMotor =
+      new TalonFX(HoodConstants.kHoodMotorCAN);
 
-  private final ServoChannel left =
-      servoHub.getServoChannel(HoodConstants.kHoodChannelIdLeft);
+  private final PositionVoltage positionRequest = new PositionVoltage(0);
+  private final NeutralOut stopRequest = new NeutralOut();
 
-  private final ServoChannel right =
-      servoHub.getServoChannel(HoodConstants.kHoodChannelIdRight);
-
-  private double targetStrokeMm = HoodConstants.kMinStrokeMm;
-
-  private int lastPulseLeftUs  = HoodConstants.kMinPulseUs;
-  private int lastPulseRightUs = HoodConstants.kMinPulseUs;
+  private double targetAngleDeg = HoodConstants.kMinAngleDeg;
 
   public HoodSubsystem() {
+    TalonFXConfiguration config = new TalonFXConfiguration();
 
-    // Configure BOTH channels (pulse range)
-    ServoHubConfig hubCfg = new ServoHubConfig();
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted =
+        HoodConstants.kMotorInverted
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
 
-    ServoChannelConfig leftCfg = new ServoChannelConfig(HoodConstants.kHoodChannelIdLeft)
-        .pulseRange(HoodConstants.kMinPulseUs, HoodConstants.kCenterPulseUs, HoodConstants.kMaxPulseUs);
+    config.Slot0 = new Slot0Configs()
+        .withKP(HoodConstants.kP)
+        .withKI(HoodConstants.kI)
+        .withKD(HoodConstants.kD)
+        .withKG(HoodConstants.kG)
+        .withGravityType(GravityTypeValue.Arm_Cosine);
 
-    ServoChannelConfig rightCfg = new ServoChannelConfig(HoodConstants.kHoodChannelIdRight)
-        .pulseRange(HoodConstants.kMinPulseUs, HoodConstants.kCenterPulseUs, HoodConstants.kMaxPulseUs);
+    config.SoftwareLimitSwitch = new SoftwareLimitSwitchConfigs()
+        .withForwardSoftLimitEnable(true)
+        .withForwardSoftLimitThreshold(angleDegToMotorRot(HoodConstants.kMaxAngleDeg))
+        .withReverseSoftLimitEnable(true)
+        .withReverseSoftLimitThreshold(angleDegToMotorRot(HoodConstants.kMinAngleDeg));
 
-    // Apply per-channel configs to the hub config
-    hubCfg.apply(HoodConstants.kHoodChannelIdLeft, leftCfg);
-    hubCfg.apply(HoodConstants.kHoodChannelIdRight, rightCfg);
+    hoodMotor.getConfigurator().apply(config);
 
-    // Push config to device
-    servoHub.configure(hubCfg, ResetMode.kResetSafeParameters);
-
-    // Enable + power both channels
-    enableChannel(left, true);
-    enableChannel(right, true);
-
-    // Start at min stroke
-    setStrokeMm(HoodConstants.kMinStrokeMm);
-  }
-
-  private static void enableChannel(ServoChannel ch, boolean enabled) {
-    ch.setPowered(enabled);
-    ch.setEnabled(enabled);
+    // If your hood is not physically sitting at min angle at boot,
+    // change this to whatever real starting angle it is.
+    hoodMotor.setPosition(angleDegToMotorRot(HoodConstants.kStartingAngleDeg));
+    targetAngleDeg = HoodConstants.kStartingAngleDeg;
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Hood/TargetStrokeMm", targetStrokeMm);
-    SmartDashboard.putNumber("Hood/TargetAngleDeg", getTargetAngleDeg());
-
-    SmartDashboard.putNumber("Hood/LeftPulseUs", lastPulseLeftUs);
-    SmartDashboard.putNumber("Hood/RightPulseUs", lastPulseRightUs);
-
-    SmartDashboard.putBoolean("Hood/LeftEnabled", left.isEnabled());
-    SmartDashboard.putBoolean("Hood/RightEnabled", right.isEnabled());
-
-    SmartDashboard.putNumber("Hood/LeftCurrentA", left.getCurrent());
-    SmartDashboard.putNumber("Hood/RightCurrentA", right.getCurrent());
+    SmartDashboard.putNumber("Hood/TargetAngleDeg", targetAngleDeg);
+    SmartDashboard.putNumber("Hood/CurrentAngleDeg", getAngleDeg());
+    SmartDashboard.putNumber("Hood/MotorRotations", hoodMotor.getPosition().getValueAsDouble());
+    SmartDashboard.putNumber("Hood/VelocityRPS", hoodMotor.getVelocity().getValueAsDouble());
+    SmartDashboard.putBoolean("Hood/AtSetpoint", atSetpoint());
   }
 
-  /** Set hood stroke in millimeters (mapped to pulse width). */
-  public void setStrokeMm(double strokeMm) {
-    strokeMm = MathUtil.clamp(strokeMm, HoodConstants.kMinStrokeMm, HoodConstants.kMaxStrokeMm);
-    targetStrokeMm = strokeMm;
-
-    int pulse = strokeMmToPulseUs(strokeMm);
-
-    // If mirrored mechanically, flip one side around center.
-    int leftPulse  = pulse;
-    int rightPulse = HoodConstants.kInvertRightPulse ? mirrorPulseAboutCenter(pulse) : pulse;
-
-    lastPulseLeftUs = leftPulse;
-    lastPulseRightUs = rightPulse;
-
-    REVLibError errL = left.setPulseWidth(leftPulse);
-    REVLibError errR = right.setPulseWidth(rightPulse);
-
-    SmartDashboard.putString("Hood/LastREVErrLeft", errL.toString());
-    SmartDashboard.putString("Hood/LastREVErrRight", errR.toString());
-  }
-
-  /** Manual command in [0..1] where 0=retract, 1=extend */
-  public void setPercent(double percent) {
-    percent = MathUtil.clamp(percent, 0.0, 1.0);
-    double stroke = HoodConstants.kMinStrokeMm +
-        percent * (HoodConstants.kMaxStrokeMm - HoodConstants.kMinStrokeMm);
-    setStrokeMm(stroke);
-  }
-
-  /** Optional: command by angle if your stroke->angle is linear. */
   public void setAngleDeg(double angleDeg) {
     angleDeg = MathUtil.clamp(angleDeg, HoodConstants.kMinAngleDeg, HoodConstants.kMaxAngleDeg);
+    targetAngleDeg = angleDeg;
 
-    double t = (angleDeg - HoodConstants.kMinAngleDeg) /
-               (HoodConstants.kMaxAngleDeg - HoodConstants.kMinAngleDeg);
-    t = MathUtil.clamp(t, 0.0, 1.0);
-
-    double stroke = HoodConstants.kMinStrokeMm +
-        t * (HoodConstants.kMaxStrokeMm - HoodConstants.kMinStrokeMm);
-
-    setStrokeMm(stroke);
+    double motorRotations = angleDegToMotorRot(angleDeg);
+    hoodMotor.setControl(positionRequest.withPosition(motorRotations));
   }
 
-  public double getTargetStrokeMm() {
-    return targetStrokeMm;
+  public void setPercent(double percent) {
+    percent = MathUtil.clamp(percent, 0.0, 1.0);
+
+    double angleDeg = HoodConstants.kMinAngleDeg
+        + percent * (HoodConstants.kMaxAngleDeg - HoodConstants.kMinAngleDeg);
+
+    setAngleDeg(angleDeg);
+  }
+
+  public double getAngleDeg() {
+    return motorRotToAngleDeg(hoodMotor.getPosition().getValueAsDouble());
   }
 
   public double getTargetAngleDeg() {
-    double t = (targetStrokeMm - HoodConstants.kMinStrokeMm) /
-               (HoodConstants.kMaxStrokeMm - HoodConstants.kMinStrokeMm);
-    t = MathUtil.clamp(t, 0.0, 1.0);
-
-    return HoodConstants.kMinAngleDeg +
-        t * (HoodConstants.kMaxAngleDeg - HoodConstants.kMinAngleDeg);
+    return targetAngleDeg;
   }
 
-  /** No real feedback, so this can't be true position-based. */
   public boolean atSetpoint() {
-    return false;
+    return Math.abs(getAngleDeg() - targetAngleDeg) <= HoodConstants.kAngleToleranceDeg;
   }
 
-  /** Keep last command (servos hold their last pulse). */
   public void stop() {
-    left.setPulseWidth(lastPulseLeftUs);
-    right.setPulseWidth(lastPulseRightUs);
+    hoodMotor.setControl(stopRequest);
   }
 
-  // --- helpers ---
-
-  private static int strokeMmToPulseUs(double strokeMm) {
-    double t = (strokeMm - HoodConstants.kMinStrokeMm) /
-               (HoodConstants.kMaxStrokeMm - HoodConstants.kMinStrokeMm);
-    t = MathUtil.clamp(t, 0.0, 1.0);
-
-    int pulseUs = (int) Math.round(
-        HoodConstants.kMinPulseUs + t * (HoodConstants.kMaxPulseUs - HoodConstants.kMinPulseUs)
-    );
-
-    return MathUtil.clamp(pulseUs, HoodConstants.kMinPulseUs, HoodConstants.kMaxPulseUs);
+  private static double angleDegToMotorRot(double angleDeg) {
+    double hoodRotations = (angleDeg - HoodConstants.kMinAngleDeg) / 360.0;
+    return hoodRotations * HoodConstants.kGearRatio;
   }
 
-  private static int mirrorPulseAboutCenter(int pulseUs) {
-    int center = HoodConstants.kCenterPulseUs;
-    int mirrored = center - (pulseUs - center);
-    return MathUtil.clamp(mirrored, HoodConstants.kMinPulseUs, HoodConstants.kMaxPulseUs);
+  private static double motorRotToAngleDeg(double motorRotations) {
+    double hoodRotations = motorRotations / HoodConstants.kGearRatio;
+    return HoodConstants.kMinAngleDeg + hoodRotations * 360.0;
   }
 }
