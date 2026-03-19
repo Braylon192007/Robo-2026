@@ -9,18 +9,37 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
-import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.Constants.SetShooterSpeedFromPositionConstants;
+import frc.robot.subsystems.ConveyorSubsystem;
+import frc.robot.subsystems.IndexerSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 
 public class SetShooterSpeedFromPosition extends Command {
 
   private final ShooterSubsystem shooter;
+  private final ConveyorSubsystem conveyor;
+  private final IndexerSubsystem indexer;
   private final Supplier<Translation2d> robotXYSupplier;
 
-  public SetShooterSpeedFromPosition(ShooterSubsystem shooter, Supplier<Translation2d> robotXYSupplier) {
+  private static final double kShooterReadyToleranceRPM = 100.0;
+
+  public SetShooterSpeedFromPosition(
+      ShooterSubsystem shooter,
+      ConveyorSubsystem conveyor,
+      IndexerSubsystem indexer,
+      Supplier<Translation2d> robotXYSupplier) {
     this.shooter = shooter;
+    this.conveyor = conveyor;
+    this.indexer = indexer;
     this.robotXYSupplier = robotXYSupplier;
-    addRequirements(shooter);
+
+    addRequirements(shooter, conveyor, indexer);
+  }
+
+  @Override
+  public void initialize() {
+    conveyor.stop();
+    indexer.stop();
   }
 
   @Override
@@ -31,54 +50,56 @@ public class SetShooterSpeedFromPosition extends Command {
     double distMeters = robotXY.getDistance(targetXY);
     double distInches = distMeters * 39.37007874;
 
-    double rpm = rpmFromDistanceInches(distInches);
-    shooter.setFlywheelRPM(rpm);
+    double targetRPM = rpmFromDistanceInches(distInches);
+    shooter.setFlywheelRPM(targetRPM);
 
-    // Helpful for tuning
+    boolean readyToShoot = shooter.atTargetRPM(targetRPM, kShooterReadyToleranceRPM);
+
+    if (readyToShoot) {
+      conveyor.feed();
+      indexer.feed();
+    } else {
+      conveyor.stop();
+      indexer.stop();
+    }
+
     SmartDashboard.putNumber("Shooter/DistanceMeters", distMeters);
     SmartDashboard.putNumber("Shooter/DistanceInches", distInches);
-    SmartDashboard.putNumber("Shooter/RPMSetpoint", rpm);
+    SmartDashboard.putNumber("Shooter/RPMSetpoint", targetRPM);
+    SmartDashboard.putNumber("Shooter/CurrentFlywheelRPM", shooter.getFlywheelRPM());
+    SmartDashboard.putBoolean("Shooter/ReadyToShoot", readyToShoot);
   }
 
   @Override
   public void end(boolean interrupted) {
     shooter.stop();
+    conveyor.stop();
+    indexer.stop();
   }
 
   @Override
   public boolean isFinished() {
-    return false; // run while held
+    return false;
   }
 
   private static Translation2d getAllianceTarget() {
-    Optional<Alliance> a = DriverStation.getAlliance();
-    if (a.isPresent()) {
-      return (a.get() == Alliance.Red)
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+    if (alliance.isPresent()) {
+      return alliance.get() == Alliance.Red
           ? SetShooterSpeedFromPositionConstants.kRedScoreXY
           : SetShooterSpeedFromPositionConstants.kBlueScoreXY;
     }
     return SetShooterSpeedFromPositionConstants.kFallbackScoreXY;
   }
 
-  /**
-   * Your measured points:
-   * 94 in -> 4100 RPM
-   * 120 in -> 4450 RPM
-   * 140 in -> 4750 RPM
-   *
-   * Linear interpolation between points; clamped outside range.
-   */
   private static double rpmFromDistanceInches(double in) {
-    // clamp below/above
     if (in <= 94.0) return 4250.0;
     if (in >= 140.0) return 4900.0;
 
-    // segment 94 -> 120
     if (in <= 120.0) {
       return lerp(94.0, 4250.0, 120.0, 4500.0, in);
     }
 
-    // segment 120 -> 140
     return lerp(120.0, 4500.0, 140.0, 4900.0, in);
   }
 

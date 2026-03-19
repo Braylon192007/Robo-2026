@@ -78,7 +78,16 @@ public class ShooterSubsystem extends SubsystemBase {
 
     leftShooterMotor.setControl(velocityRequest.withVelocity(motorRPS));
   }
+  public boolean atTargetRPM(double targetRPM, double toleranceRPM) {
+    double leftMotorRPS = leftShooterMotor.getVelocity().getValueAsDouble();
+    double rightMotorRPS = rightShooterMotor.getVelocity().getValueAsDouble();
 
+    double leftFlywheelRPM = leftMotorRPS * 60.0 * ShooterConstants.kGearRatio;
+    double rightFlywheelRPM = rightMotorRPS * 60.0 * ShooterConstants.kGearRatio;
+
+    return Math.abs(targetRPM - leftFlywheelRPM) <= toleranceRPM
+        && Math.abs(targetRPM - rightFlywheelRPM) <= toleranceRPM;
+  }
   public void stop() {
     targetFlywheelRPM = 0.0;
     leftShooterMotor.setControl(stopRequest);
@@ -87,9 +96,13 @@ public class ShooterSubsystem extends SubsystemBase {
 
   /** Returns flywheel RPM estimate from motor encoder velocity and gear ratio. */
   public double getFlywheelRPM() {
-    double motorRPS = leftShooterMotor.getVelocity().getValueAsDouble();
-    double motorRPM = motorRPS * 60.0;
-    return motorRPM * ShooterConstants.kGearRatio;
+    double leftMotorRPS = leftShooterMotor.getVelocity().getValueAsDouble();
+    double rightMotorRPS = rightShooterMotor.getVelocity().getValueAsDouble();
+
+    double leftFlywheelRPM = leftMotorRPS * 60.0 * ShooterConstants.kGearRatio;
+    double rightFlywheelRPM = rightMotorRPS * 60.0 * ShooterConstants.kGearRatio;
+
+    return (leftFlywheelRPM + rightFlywheelRPM) / 2.0;
   }
 
   public double getTargetFlywheelRPM() {

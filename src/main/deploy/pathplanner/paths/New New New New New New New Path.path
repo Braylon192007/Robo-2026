@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.107745974955277,
-        "y": 3.994436493738819
+        "x": 8.232750583228219,
+        "y": 3.650236932552815
       },
       "isLocked": false,
       "linkedName": "RightGo1"
@@ -20,28 +20,44 @@
         "y": 2.2096422182468687
       },
       "prevControl": {
-        "x": 7.107244160166014,
-        "y": 2.4595823005329978
+        "x": 7.254056814466304,
+        "y": 2.632672671442963
       },
       "nextControl": {
-        "x": 7.053094812164579,
-        "y": -0.013237924865832085
+        "x": 6.419771754636234,
+        "y": 0.31513552068473727
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.8182647584973166,
-        "y": 1.2198926654740603
+        "x": 4.026119828815976,
+        "y": 0.7550499286733237
       },
       "prevControl": {
-        "x": 1.7311627906976743,
-        "y": 0.27881932021466793
+        "x": 5.371740370898715,
+        "y": 0.8844365192582018
+      },
+      "nextControl": {
+        "x": 3.57369292275075,
+        "y": 0.7115473415516675
+      },
+      "isLocked": false,
+      "linkedName": "RightShoot1"
+    },
+    {
+      "anchor": {
+        "x": 2.589928673323822,
+        "y": 1.2725962910128386
+      },
+      "prevControl": {
+        "x": 2.6825938145428627,
+        "y": 1.040404190365863
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightShoot1"
+      "linkedName": "RightShoot1st"
     }
   ],
   "rotationTargets": [
@@ -51,11 +67,11 @@
     },
     {
       "waypointRelativePos": 1.3591731266149871,
-      "rotationDegrees": 0.0
+      "rotationDegrees": -90.0
     },
     {
-      "waypointRelativePos": 1.7209302325581395,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 2.276661514683152,
+      "rotationDegrees": -90.0
     }
   ],
   "constraintZones": [],
@@ -71,7 +87,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 54.605204155012935
+    "rotation": -126.9702567101712
   },
   "reversed": false,
   "folder": "Right Auto New",

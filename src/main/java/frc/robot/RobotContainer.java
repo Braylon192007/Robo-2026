@@ -131,22 +131,28 @@ public class RobotContainer {
         .whileTrue(new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
 
     m_driverController.leftBumper()
-        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(6000)))
+        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(3200)))
         .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
 
     m_driverController.a()
         .whileTrue(new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
 
     m_driverController.rightBumper()
-        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(4500)))
+        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(3900)))
         .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
 
     m_driverController.rightTrigger()
         .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY(), () -> -m_driverController.getLeftX()));
 
     m_driverController.rightTrigger()
-        .whileTrue(new SetShooterSpeedFromPosition(m_shooterSubsystem, () -> drivetrain.getState().Pose.getTranslation()));
-  }
+        .whileTrue(new SetShooterSpeedFromPosition(
+            m_shooterSubsystem,
+            m_indexerSubsystem,
+            m_conveyorSubsystem,
+            () -> drivetrain.getState().Pose.getTranslation()
+        ));
+
+    }
 
   public Command getAutonomousCommand(String autoName) {
     return autos.get(autoName);
