@@ -147,8 +147,8 @@ public class RobotContainer {
     m_driverController.rightTrigger()
         .whileTrue(new SetShooterSpeedFromPosition(
             m_shooterSubsystem,
-            m_indexerSubsystem,
             m_conveyorSubsystem,
+            m_indexerSubsystem,
             () -> drivetrain.getState().Pose.getTranslation()
         ));
 
