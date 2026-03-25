@@ -74,8 +74,8 @@ public class RobotContainer {
         // ===== Auto 1 =====
         autoFactory.bind("intakeDrop",
             Commands.sequence(
-                Commands.runOnce(() -> m_intakePivotSubsystem.setPercent(-0.4), m_intakePivotSubsystem),
-                Commands.waitSeconds(0.7),
+                Commands.runOnce(() -> m_intakePivotSubsystem.setPercent(-0.75), m_intakePivotSubsystem),
+                Commands.waitSeconds(0.75),
                 Commands.runOnce(() -> m_intakePivotSubsystem.stop(), m_intakePivotSubsystem)
             )
         );
@@ -123,12 +123,14 @@ public class RobotContainer {
         );
         testPath.done().onTrue(
             Commands.sequence(
+                new AimAtHubBack(drivetrain, () -> 0.0, () -> 0.0).withTimeout(.5),
                 Commands.waitSeconds(2.5),
                 testPath2.cmd()
             )
         );
         testPath2.done().onTrue(
             Commands.sequence(
+                new AimAtHubBack(drivetrain, () -> 0.0, () -> 0.0).withTimeout(.5),
                 Commands.waitSeconds(2),
                 Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
                 Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
