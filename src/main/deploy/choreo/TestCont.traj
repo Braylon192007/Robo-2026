@@ -2,7 +2,8 @@
  "name":"TestCont",
  "version":3,
  "snapshot":{
-  "waypoints":[
+  "waypoints
+  
     {"x":2.6221845149993896, "y":5.02518367767334, "heading":2.5686266341382797, "intervals":23, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":3.42832088470459, "y":5.546844005584717, "heading":0.8402879289062932, "intervals":41, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":5.902047634124756, "y":5.421364784240723, "heading":0.8253765284796333, "intervals":32, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
@@ -357,9 +358,11 @@
   "splits":[0]
  },
  "events":[
-   {"name":"stopAll", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"intake", "from":{"target":2, "targetTimestamp":2.40353, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"charge", "from":{"target":6, "targetTimestamp":5.72904, "offset":{"exp":"1 s", "val":1.0}}, "event":null},
-   {"name":"stopIntake", "from":{"target":6, "targetTimestamp":5.72904, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"feed", "from":{"target":9, "targetTimestamp":8.33171, "offset":{"exp":"0 s", "val":0.0}}, "event":null}]
+   {"name":"Start Intake", "from":{"target":2, "targetTimestamp":2.63132, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"Start Intake"}}},
+   {"name":"Spin Up Shooter", "from":{"target":6, "targetTimestamp":5.84931, "offset":{"exp":"1 s", "val":1.0}}, "event":{"type":"named", "data":{"name":"Spin Up Shooter"}}},
+   {"name":"Shoot Balls", "from":{"target":8, "targetTimestamp":8.51246, "offset":{"exp":"0.1 s", "val":0.1}}, "event":{"type":"sequential", "data":{"commands":[
+       {"type":"named", "data":{"name":"Shoot Balls"}},
+       {"type":"wait", "data":{"waitTime":{"exp":"2.5 s", "val":2.5}}},
+       {"type":"named", "data":{"name":"Stop All"}}]}}},
+   {"name":"Stop Intake", "from":{"target":6, "targetTimestamp":5.84931, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"Stop Intake"}}}]
 }

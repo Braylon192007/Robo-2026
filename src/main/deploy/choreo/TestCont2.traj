@@ -35,7 +35,7 @@
     {"x":{"exp":"5.7909393310546875 m", "val":5.7909393310546875}, "y":{"exp":"4.808785915374756 m", "val":4.808785915374756}, "heading":{"exp":"1.5707963267948966 rad", "val":1.5707963267948966}, "intervals":17, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"5.814411640167236 m", "val":5.814411640167236}, "y":{"exp":"5.537084579467773 m", "val":5.537084579467773}, "heading":{"exp":"0.8936688056805272 rad", "val":0.8936688056805272}, "intervals":44, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"3.434694528579712 m", "val":3.434694528579712}, "y":{"exp":"5.632820129394531 m", "val":5.632820129394531}, "heading":{"exp":"0.952651601715066 rad", "val":0.952651601715066}, "intervals":20, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"2.6112747192382812 m", "val":2.6112747192382812}, "y":{"exp":"5.017228126525879 m", "val":5.017228126525879}, "heading":{"exp":"2.488911735269918 rad", "val":2.488911735269918}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"2.6833667755126953 m", "val":2.6833667755126953}, "y":{"exp":"5.068652629852295 m", "val":5.068652629852295}, "heading":{"exp":"2.488911735269918 rad", "val":2.488911735269918}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
@@ -315,9 +315,11 @@
   "splits":[0]
  },
  "events":[
-   {"name":"stopAll", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"intake", "from":{"target":2, "targetTimestamp":1.46827, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"stopIntake", "from":{"target":7, "targetTimestamp":4.85289, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"charge", "from":{"target":7, "targetTimestamp":4.85289, "offset":{"exp":"1 s", "val":1.0}}, "event":null},
-   {"name":"feed", "from":{"target":9, "targetTimestamp":7.50019, "offset":{"exp":"0 s", "val":0.0}}, "event":null}]
+   {"name":"Start Intake", "from":{"target":2, "targetTimestamp":1.46827, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"Start Intake"}}},
+   {"name":"Stop Intake", "from":{"target":7, "targetTimestamp":4.85289, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"Stop Intake"}}},
+   {"name":"Spin Up Shooter", "from":{"target":7, "targetTimestamp":4.85289, "offset":{"exp":"1 s", "val":1.0}}, "event":{"type":"named", "data":{"name":"Spin Up Shooter"}}},
+   {"name":"Shoot Balls", "from":{"target":9, "targetTimestamp":7.50019, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"sequential", "data":{"commands":[
+       {"type":"named", "data":{"name":"Shoot Balls"}},
+       {"type":"wait", "data":{"waitTime":{"exp":"2.5 s", "val":2.5}}},
+       {"type":"named", "data":{"name":"Stop All"}}]}}}]
 }

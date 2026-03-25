@@ -299,10 +299,12 @@
   "splits":[0]
  },
  "events":[
-   {"name":"intakeDrop", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0.3 s", "val":0.3}}, "event":{"type":"sequential", "data":{"commands":[]}}},
-   {"name":"intake", "from":{"target":1, "targetTimestamp":0.77659, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":""}}},
-   {"name":"intake", "from":{"target":2, "targetTimestamp":1.26555, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"stopIntake", "from":{"target":5, "targetTimestamp":3.02706, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"charge", "from":{"target":5, "targetTimestamp":3.02706, "offset":{"exp":"1 s", "val":1.0}}, "event":{"type":"wait", "data":{"waitTime":{"exp":"2 s", "val":2.0}}}},
-   {"name":"feed", "from":{"target":7, "targetTimestamp":6.19272, "offset":{"exp":"0 s", "val":0.0}}, "event":null}]
+   {"name":"Drop Intake", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"Drop Intake"}}},
+   {"name":"Start Intake", "from":{"target":2, "targetTimestamp":1.26555, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"Start Intake"}}},
+   {"name":"Stop Intake", "from":{"target":5, "targetTimestamp":3.02701, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"Stop Intake"}}},
+   {"name":"Spin Up Shooter", "from":{"target":5, "targetTimestamp":3.02701, "offset":{"exp":"1 s", "val":1.0}}, "event":{"type":"named", "data":{"name":"Spin Up Shooter"}}},
+   {"name":"Shoot Balls", "from":{"target":7, "targetTimestamp":5.77531, "offset":{"exp":"0.1 s", "val":0.1}}, "event":{"type":"sequential", "data":{"commands":[
+       {"type":"named", "data":{"name":"Shoot Balls"}},
+       {"type":"wait", "data":{"waitTime":{"exp":"2.5 s", "val":2.5}}},
+       {"type":"named", "data":{"name":"Stop All"}}]}}}]
 }
