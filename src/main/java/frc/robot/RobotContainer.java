@@ -85,6 +85,34 @@ public class RobotContainer {
         NamedCommands.registerCommand("Stop All", new StopAll(m_conveyorSubsystem, m_indexerSubsystem, m_shooterSubsystem, m_intakeSubsystem));
 
         // ===== Auto 1 =====
+        autoFactory.bind("intakeDrop",
+            Commands.sequence(
+                Commands.runOnce(() -> m_intakePivotSubsystem.setPercent(-0.75), m_intakePivotSubsystem),
+                Commands.waitSeconds(0.75),
+                Commands.runOnce(() -> m_intakePivotSubsystem.stop(), m_intakePivotSubsystem)
+            )
+        );
+        autoFactory.bind("intake",
+            new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
+        autoFactory.bind("stopIntake",
+            Commands.sequence(
+                Commands.runOnce(() -> m_intakeSubsystem.stop(), m_intakeSubsystem),
+                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem)
+            )
+        );
+        autoFactory.bind("charge",
+            Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(6000), m_shooterSubsystem)
+        );
+        autoFactory.bind("feed",
+            new FeedBall(m_indexerSubsystem, m_conveyorSubsystem)
+        );
+        autoFactory.bind("stopAll", 
+            Commands.sequence(
+                Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
+                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
+                Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem)
+            )
+        );
         AutoRoutine newPathRoutine = autoFactory.newRoutine("NewPathAuto");
         AutoTrajectory newPath = newPathRoutine.trajectory("NewPath");
         
