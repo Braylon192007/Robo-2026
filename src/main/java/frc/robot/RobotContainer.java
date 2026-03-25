@@ -5,7 +5,7 @@ import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-
+import com.pathplanner.lib.auto.NamedCommands;
 
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
@@ -20,6 +20,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -71,6 +74,16 @@ public class RobotContainer {
 
   
     private void configureAutos() {
+        NamedCommands.registerCommand("Start Intake", new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
+        NamedCommands.registerCommand("Stop Intake", new IntakeStop(m_intakeSubsystem, m_conveyorSubsystem));
+        NamedCommands.registerCommand("Drop Intake", new DropIntake(m_intakePivotSubsystem));
+
+        NamedCommands.registerCommand("Spin Up Shooter", new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(6000), m_shooterSubsystem));
+            
+        NamedCommands.registerCommand("Shoot Balls", new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
+
+        NamedCommands.registerCommand("Stop All", new StopAll(m_conveyorSubsystem, m_indexerSubsystem, m_shooterSubsystem, m_intakeSubsystem));
+
         // ===== Auto 1 =====
         autoFactory.bind("intakeDrop",
             Commands.sequence(
@@ -112,6 +125,7 @@ public class RobotContainer {
 
         
         // ===== Auto 2 =====
+        //bump
         AutoRoutine testRoutine = autoFactory.newRoutine("TestAuto");
         AutoTrajectory testPath = testRoutine.trajectory("Test");
         AutoTrajectory testPath2 = testRoutine.trajectory("TestCont");
@@ -122,21 +136,10 @@ public class RobotContainer {
             )
         );
         testPath.done().onTrue(
-            Commands.sequence(
-                new AimAtHubBack(drivetrain, () -> 0.0, () -> 0.0).withTimeout(.5),
-                Commands.waitSeconds(2.5),
-                testPath2.cmd()
-            )
+            testPath2.cmd()
         );
-        testPath2.done().onTrue(
-            Commands.sequence(
-                new AimAtHubBack(drivetrain, () -> 0.0, () -> 0.0).withTimeout(.5),
-                Commands.waitSeconds(2),
-                Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
-                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
-                Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem)
-            )
-        );
+
+        //trench
         AutoRoutine testRoutineTrench = autoFactory.newRoutine("TestAuto");
         AutoTrajectory testPathTrench1 = testRoutineTrench.trajectory("Test");
         AutoTrajectory testPathTrench2 = testRoutineTrench.trajectory("TestCont2");
@@ -147,18 +150,7 @@ public class RobotContainer {
             )
         );
         testPathTrench1.done().onTrue(
-            Commands.sequence(
-                Commands.waitSeconds(2.5),
-                testPathTrench2.cmd()
-            )
-        );
-        testPathTrench2.done().onTrue(
-            Commands.sequence(
-                Commands.waitSeconds(2),
-                Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
-                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
-                Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem)
-            )
+            testPathTrench2.cmd()
         );
         // ===== Put them in chooser =====
         autoChooser.setDefaultOption("NewPath Auto", newPathRoutine.cmd());
@@ -219,6 +211,12 @@ public class RobotContainer {
             m_indexerSubsystem,
             () -> drivetrain.getState().Pose.getTranslation()
         ));
+
+
+
+
+
+
 
     }
 
