@@ -89,7 +89,7 @@ public class ShooterSubsystem extends SubsystemBase {
         && Math.abs(targetRPM - rightFlywheelRPM) <= toleranceRPM;
   }
   public void stop() {
-    targetFlywheelRPM = 0.0;
+    setFlywheelRPM(0);
     leftShooterMotor.setControl(stopRequest);
     rightShooterMotor.setControl(stopRequest);
   }

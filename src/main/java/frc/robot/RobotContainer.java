@@ -75,26 +75,14 @@ public class RobotContainer {
   
     private void configureAutos() {
         NamedCommands.registerCommand("Start Intake", new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
-        NamedCommands.registerCommand("Stop Intake", Commands.parallel(
-            Commands.runOnce(() -> m_intakeSubsystem.stop(), m_intakeSubsystem),
-            Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem)
-        ));
-        NamedCommands.registerCommand("Drop Intake", Commands.sequence(
-            Commands.runOnce(() -> m_intakePivotSubsystem.setPercent(-0.4), m_intakePivotSubsystem),
-            Commands.waitSeconds(0.7),
-            Commands.runOnce(() -> m_intakePivotSubsystem.stop(), m_intakePivotSubsystem)
-        ));
+        NamedCommands.registerCommand("Stop Intake", new IntakeStop(m_intakeSubsystem, m_conveyorSubsystem));
+        NamedCommands.registerCommand("Drop Intake", new DropIntake(m_intakePivotSubsystem));
 
         NamedCommands.registerCommand("Spin Up Shooter", new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(6000), m_shooterSubsystem));
             
         NamedCommands.registerCommand("Shoot Balls", new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
 
-        NamedCommands.registerCommand("Stop All", Commands.parallel(
-            Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
-            Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem),
-            Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
-            Commands.runOnce(() -> m_intakeSubsystem.stop(), m_intakeSubsystem)
-        ));
+        NamedCommands.registerCommand("Stop All", new StopAll(m_conveyorSubsystem, m_indexerSubsystem, m_shooterSubsystem, m_intakeSubsystem));
 
         // ===== Auto 1 =====
         AutoRoutine newPathRoutine = autoFactory.newRoutine("NewPathAuto");
