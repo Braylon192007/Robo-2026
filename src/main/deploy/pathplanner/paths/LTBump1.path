@@ -1,0 +1,91 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.674821683309556,
+        "y": 6.771526390870186
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.852611043243975,
+        "y": 6.5957681947764915
+      },
+      "isLocked": false,
+      "linkedName": "LTBump"
+    },
+    {
+      "anchor": {
+        "x": 8.166490727532096,
+        "y": 6.098716119828817
+      },
+      "prevControl": {
+        "x": 7.938791115409497,
+        "y": 6.480977928424556
+      },
+      "nextControl": {
+        "x": 8.424033613907161,
+        "y": 5.666353461768196
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.985349500713266,
+        "y": 4.584893009985735
+      },
+      "prevControl": {
+        "x": 8.478597044701084,
+        "y": 4.80669052897244
+      },
+      "nextControl": {
+        "x": 7.201332628408453,
+        "y": 4.232345898012244
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.1480599144079875,
+        "y": 5.361212553495007
+      },
+      "prevControl": {
+        "x": 6.873939305764131,
+        "y": 4.53529571514566
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "LTBumpR"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 2.0,
+      "rotationDegrees": -135.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.39,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 600.0,
+    "maxAngularAcceleration": 1000.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 2.0,
+    "rotation": 53.67317404787978
+  },
+  "reversed": false,
+  "folder": "Left Trench",
+  "idealStartingState": {
+    "velocity": 3.0,
+    "rotation": -59.264512298079865
+  },
+  "useDefaultConstraints": true
+}

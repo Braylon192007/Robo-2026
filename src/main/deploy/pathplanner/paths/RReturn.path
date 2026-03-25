@@ -3,51 +3,55 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.427218259629101,
-        "y": 0.6644793152639101
+        "x": 3.144422222222222,
+        "y": 2.3881888888888874
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.427218259629103,
-        "y": 0.6644793152639101
+        "x": 3.2611946799822906,
+        "y": 2.1671364220203335
       },
       "isLocked": false,
-      "linkedName": "Right Start New"
+      "linkedName": "RightShoot1st"
     },
     {
       "anchor": {
-        "x": 8.18887298747764,
-        "y": 1.8851341681574239
+        "x": 6.486766666666667,
+        "y": 0.760866666666667
       },
       "prevControl": {
-        "x": 7.719849388516253,
-        "y": 0.4780633712732629
+        "x": 2.3843555555555547,
+        "y": -0.525400000000001
       },
       "nextControl": {
-        "x": 8.448479427549195,
-        "y": 2.6639534883720923
+        "x": 7.465933842244412,
+        "y": 1.0678739521209721
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.448479427549195,
-        "y": 3.523899821109123
+        "x": 6.825939177101969,
+        "y": 3.3778711985688723
       },
       "prevControl": {
-        "x": 8.432254025044722,
-        "y": 2.534150268336315
+        "x": 7.7143884819794195,
+        "y": 2.1912252690855447
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightGo1"
+      "linkedName": "RightGrab2"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.152454780361757,
-      "rotationDegrees": 89.62657753419307
+      "waypointRelativePos": 0.5986604842864505,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 0.7800103039670271,
+      "rotationDegrees": 0.0
     }
   ],
   "constraintZones": [],
@@ -62,14 +66,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 113.19859051364814
+    "velocity": 1.0,
+    "rotation": 116.56505117707799
   },
   "reversed": false,
   "folder": "Right Auto New",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -0.6780249107512996
+    "rotation": -133.31531568210377
   },
   "useDefaultConstraints": true
 }

@@ -1,0 +1,99 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 6.825939177101969,
+        "y": 4.622
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.287346216280713,
+        "y": 4.328976967066498
+      },
+      "isLocked": false,
+      "linkedName": "LBack2"
+    },
+    {
+      "anchor": {
+        "x": 6.044550641940085,
+        "y": 5.801126961483595
+      },
+      "prevControl": {
+        "x": 6.212753209700427,
+        "y": 4.6366476462196875
+      },
+      "nextControl": {
+        "x": 5.945221625813846,
+        "y": 6.488789380819097
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.427218259629101,
+        "y": 7.4572753209700435
+      },
+      "prevControl": {
+        "x": 7.6638813983230065,
+        "y": 7.73470359000095
+      },
+      "nextControl": {
+        "x": 3.5215121255349495,
+        "y": 7.379643366619116
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.107475035663337,
+        "y": 5.3353352353780314
+      },
+      "prevControl": {
+        "x": 2.2664621968616254,
+        "y": 7.509029957203994
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "LShoot"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.8670788253477592,
+      "rotationDegrees": 90.42460479191843
+    },
+    {
+      "waypointRelativePos": 1.800618238021638,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 2.1715610510046366,
+      "rotationDegrees": 0.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.39,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 600.0,
+    "maxAngularAcceleration": 1000.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 135.85509739626676
+  },
+  "reversed": false,
+  "folder": "Left Auto New",
+  "idealStartingState": {
+    "velocity": 3.0,
+    "rotation": -125.82687977064228
+  },
+  "useDefaultConstraints": true
+}

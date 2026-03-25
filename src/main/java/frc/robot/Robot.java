@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
-  private SendableChooser<String> autoPath = new SendableChooser<>();
+  //private SendableChooser<String> autoPath = new SendableChooser<>();
   private final SendableChooser<Double> flywheelRPM = new SendableChooser<>();
   private final SendableChooser<Double> hoodStroke = new SendableChooser<>();
   private final RobotContainer m_robotContainer;
@@ -30,11 +30,13 @@ public class Robot extends TimedRobot {
   public Robot() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    autoPath.setDefaultOption("Test", "Test");
-    autoPath.addOption("LeftAuto", "LeftAuto");
+    //autoPath.setDefaultOption("Test", "Test");
+    //autoPath.addOption("LeftAuto", "LeftAuto");
+    //autoPath.addOption("NewAutoLeft", "NewAutoLeft");
+    //autoPath.addOption("NewAutoRight", "NewAutoRight");
     flywheelRPM.setDefaultOption("Flywheel RPM:", 0.0);
     hoodStroke.setDefaultOption("Hood Stroke:", 30.0);
-    SmartDashboard.putData("Auto Path", autoPath);
+    //SmartDashboard.putData("Auto Path", autoPath);
     SmartDashboard.putNumber("Flywheel RPM", flywheelRPM.getSelected());
     SmartDashboard.putNumber("Hood Stroke", hoodStroke.getSelected());
     m_robotContainer = new RobotContainer();
@@ -60,7 +62,7 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    SmartDashboard.putString("Auto Path Selected", autoPath.getSelected());
+    //SmartDashboard.putString("Auto Path Selected", autoPath.getSelected());
     //SmartDashboard.putNumber("Climber Position", m_robotContainer.m_climberSubsystem.getPosition());
     SmartDashboard.putNumber("Intake Pivot Position", m_robotContainer.m_intakePivotSubsystem.getAngleDeg());
     SmartDashboard.putNumber("X Position", m_robotContainer.drivetrain.getState().Pose.getX());
@@ -82,7 +84,7 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand(autoPath.getSelected());
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {

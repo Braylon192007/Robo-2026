@@ -5,12 +5,20 @@ import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
+
+
+import choreo.auto.AutoFactory;
+import choreo.auto.AutoRoutine;
+import choreo.auto.AutoTrajectory;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import static edu.wpi.first.units.Units.*;
+
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -43,6 +51,9 @@ public class RobotContainer {
   public final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
   public final ConveyorSubsystem m_conveyorSubsystem = new ConveyorSubsystem();
   public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
+  public final HoodSubsystem m_hoodSubsytem = new HoodSubsystem();
+  private final AutoFactory autoFactory = drivetrain.createAutoFactory();
+  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
@@ -52,58 +63,108 @@ public class RobotContainer {
   private final Map<String, Command> autos = new HashMap<>();
 
   public RobotContainer() {
-    registerNamedCommands();
     configureBindings();
-    buildAutos();
+    configureAutos();
   }
 
-  private void registerNamedCommands() {
-    NamedCommands.registerCommand("IntakeDown",
-        new InstantCommand(() -> m_intakePivotSubsystem.setPercent(-.4), m_intakePivotSubsystem));
+  
 
-    NamedCommands.registerCommand("IntakeStop",
-        new InstantCommand(() -> m_intakePivotSubsystem.stop(), m_intakePivotSubsystem));
+  
+    private void configureAutos() {
+        // ===== Auto 1 =====
+        autoFactory.bind("intakeDrop",
+            Commands.sequence(
+                Commands.runOnce(() -> m_intakePivotSubsystem.setPercent(-0.4), m_intakePivotSubsystem),
+                Commands.waitSeconds(0.7),
+                Commands.runOnce(() -> m_intakePivotSubsystem.stop(), m_intakePivotSubsystem)
+            )
+        );
+        autoFactory.bind("intake",
+            new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
+        autoFactory.bind("stopIntake",
+            Commands.sequence(
+                Commands.runOnce(() -> m_intakeSubsystem.stop(), m_intakeSubsystem),
+                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem)
+            )
+        );
+        autoFactory.bind("charge",
+            Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(6000), m_shooterSubsystem)
+        );
+        autoFactory.bind("feed",
+            new FeedBall(m_indexerSubsystem, m_conveyorSubsystem)
+        );
+        autoFactory.bind("stopAll", 
+            Commands.sequence(
+                Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
+                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
+                Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem)
+            )
+        );
+        AutoRoutine newPathRoutine = autoFactory.newRoutine("NewPathAuto");
+        AutoTrajectory newPath = newPathRoutine.trajectory("NewPath");
+        
+        newPathRoutine.active().onTrue(
+            Commands.sequence(
+                newPath.resetOdometry(),
+                newPath.cmd()
+            )
+        );
 
-    NamedCommands.registerCommand("Intake",
-        new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
+        
+        // ===== Auto 2 =====
+        AutoRoutine testRoutine = autoFactory.newRoutine("TestAuto");
+        AutoTrajectory testPath = testRoutine.trajectory("Test");
+        AutoTrajectory testPath2 = testRoutine.trajectory("TestCont");
+        testRoutine.active().onTrue(
+            Commands.sequence(
+                testPath.resetOdometry(),
+                testPath.cmd()
+            )
+        );
+        testPath.done().onTrue(
+            Commands.sequence(
+                Commands.waitSeconds(2.5),
+                testPath2.cmd()
+            )
+        );
+        testPath2.done().onTrue(
+            Commands.sequence(
+                Commands.waitSeconds(2),
+                Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
+                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
+                Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem)
+            )
+        );
+        AutoRoutine testRoutineTrench = autoFactory.newRoutine("TestAuto");
+        AutoTrajectory testPathTrench1 = testRoutineTrench.trajectory("Test");
+        AutoTrajectory testPathTrench2 = testRoutineTrench.trajectory("TestCont2");
+        testRoutineTrench.active().onTrue(
+            Commands.sequence(
+                testPathTrench1.resetOdometry(),
+                testPathTrench1.cmd()
+            )
+        );
+        testPathTrench1.done().onTrue(
+            Commands.sequence(
+                Commands.waitSeconds(2.5),
+                testPathTrench2.cmd()
+            )
+        );
+        testPathTrench2.done().onTrue(
+            Commands.sequence(
+                Commands.waitSeconds(2),
+                Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
+                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
+                Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem)
+            )
+        );
+        // ===== Put them in chooser =====
+        autoChooser.setDefaultOption("NewPath Auto", newPathRoutine.cmd());
+        autoChooser.addOption("Test Auto Bump", testRoutine.cmd());
+        autoChooser.addOption("Test Auto Trench", testRoutineTrench.cmd());
 
-    NamedCommands.registerCommand("StopIntake",
-        new InstantCommand(() -> {
-          m_intakeSubsystem.stop();
-          m_conveyorSubsystem.stop();
-        }, m_intakeSubsystem, m_conveyorSubsystem));
-
-    NamedCommands.registerCommand("Charge",
-        new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(4500), m_shooterSubsystem));
-
-    NamedCommands.registerCommand("StopShooter",
-        new InstantCommand(() -> {
-          m_shooterSubsystem.setFlywheelRPM(0);
-          m_conveyorSubsystem.stop();
-          m_indexerSubsystem.stop();
-        }, m_shooterSubsystem, m_conveyorSubsystem, m_indexerSubsystem));
-
-    NamedCommands.registerCommand("ConveyorGo",
-        new InstantCommand(() -> m_conveyorSubsystem.feed(), m_conveyorSubsystem));
-
-    NamedCommands.registerCommand("Feed",
-        new InstantCommand(() -> {
-          m_indexerSubsystem.feed();
-          m_conveyorSubsystem.feed();
-        }, m_indexerSubsystem, m_conveyorSubsystem));
-
-    NamedCommands.registerCommand("StopFeed",
-        new InstantCommand(() -> {
-          m_indexerSubsystem.stop();
-          m_conveyorSubsystem.stop();
-        }, m_indexerSubsystem, m_conveyorSubsystem));
-  }
-
-  private void buildAutos() {
-    autos.put("Test", AutoBuilder.buildAuto("Test"));
-    autos.put("LeftAuto", AutoBuilder.buildAuto("LeftAuto"));
-  }
-
+        SmartDashboard.putData("Auto Chooser", autoChooser);
+    }
   private void configureBindings() {
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(() ->
@@ -131,19 +192,24 @@ public class RobotContainer {
         .whileTrue(new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
 
     m_driverController.leftBumper()
-        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(3200)))
+        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(5000)))
         .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
 
     m_driverController.a()
         .whileTrue(new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
 
     m_driverController.rightBumper()
-        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(3900)))
+        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(6000)))
         .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
 
     m_driverController.rightTrigger()
-        .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY(), () -> -m_driverController.getLeftX()));
-
+        .whileTrue(new AimAtHubBack(drivetrain, () -> -m_driverController.getLeftY(), () -> -m_driverController.getLeftX()));
+    m_driverController.povUp()
+        .whileTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setSpeed(.5)))
+        .onFalse(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.stop()));
+    m_driverController.povRight()
+        .whileTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setSpeed(-.5)))
+        .onFalse(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.stop()));
     m_driverController.rightTrigger()
         .whileTrue(new SetShooterSpeedFromPosition(
             m_shooterSubsystem,
@@ -154,7 +220,7 @@ public class RobotContainer {
 
     }
 
-  public Command getAutonomousCommand(String autoName) {
-    return autos.get(autoName);
+  public Command getAutonomousCommand() {
+    return autoChooser.getSelected();
   }
 }

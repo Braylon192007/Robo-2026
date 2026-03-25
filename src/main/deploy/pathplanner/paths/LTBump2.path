@@ -3,39 +3,35 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.067755555555557,
-        "y": 4.093466666666666
+        "x": 5.902225392296718,
+        "y": 5.4517831669044226
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.53548888888889,
-        "y": 0.5075111111111097
+        "x": 5.785777460770328,
+        "y": 5.917574893009986
       },
       "isLocked": false,
-      "linkedName": "rightsecond"
+      "linkedName": "LTBumpOver"
     },
     {
       "anchor": {
-        "x": 2.1310000000000002,
-        "y": 0.8777999999999986
+        "x": 5.8892867332382295,
+        "y": 2.592339514978602
       },
       "prevControl": {
-        "x": 7.149388888888889,
-        "y": 0.6244444444444446
+        "x": 6.872624821683308,
+        "y": 3.3169044222539235
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LTBumpOver2"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.24168336673346674,
-      "rotationDegrees": 0.0
-    },
-    {
-      "waypointRelativePos": 0.8557114228456913,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 0.4250386398763523,
+      "rotationDegrees": -45.69245337261069
     }
   ],
   "constraintZones": [],
@@ -50,14 +46,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 46.70981404414159
+    "velocity": 1.0,
+    "rotation": -132.87890360333856
   },
   "reversed": false,
-  "folder": "Right Auto",
+  "folder": "Left Trench",
   "idealStartingState": {
-    "velocity": 0,
-    "rotation": 89.45948981318796
+    "velocity": 1.0,
+    "rotation": 45.0
   },
   "useDefaultConstraints": true
 }

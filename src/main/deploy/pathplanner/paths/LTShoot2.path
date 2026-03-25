@@ -3,46 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.067755555555557,
-        "y": 4.093466666666666
+        "x": 5.8892867332382295,
+        "y": 2.592339514978602
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.53548888888889,
-        "y": 0.5075111111111097
+        "x": 6.476753620458494,
+        "y": 2.568143232761516
       },
       "isLocked": false,
-      "linkedName": "rightsecond"
+      "linkedName": "LTBumpOver2"
     },
     {
       "anchor": {
-        "x": 2.1310000000000002,
-        "y": 0.8777999999999986
+        "x": 2.9522111269614832,
+        "y": 2.4888302425106996
       },
       "prevControl": {
-        "x": 7.149388888888889,
-        "y": 0.6244444444444446
+        "x": 3.3791868758915826,
+        "y": 2.5794008559201145
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.24168336673346674,
-      "rotationDegrees": 0.0
-    },
-    {
-      "waypointRelativePos": 0.8557114228456913,
-      "rotationDegrees": 0.0
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.39,
+    "maxVelocity": 2.0,
     "maxAcceleration": 4.0,
     "maxAngularVelocity": 600.0,
     "maxAngularAcceleration": 1000.0,
@@ -51,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 46.70981404414159
+    "rotation": -136.00508600525413
   },
   "reversed": false,
-  "folder": "Right Auto",
+  "folder": "Left Trench",
   "idealStartingState": {
-    "velocity": 0,
-    "rotation": 89.45948981318796
+    "velocity": 1.0,
+    "rotation": -132.87890360333856
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

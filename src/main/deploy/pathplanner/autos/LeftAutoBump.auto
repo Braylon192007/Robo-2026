@@ -1,0 +1,49 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LTStart"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LTBump1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LTBumpBack"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LTBumpReturn"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LTBump2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LTShoot2"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
