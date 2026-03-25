@@ -346,9 +346,11 @@
   "splits":[0]
  },
  "events":[
-   {"name":"stopAll", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"intake", "from":{"target":2, "targetTimestamp":2.63132, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"charge", "from":{"target":6, "targetTimestamp":5.84931, "offset":{"exp":"1 s", "val":1.0}}, "event":null},
-   {"name":"feed", "from":{"target":8, "targetTimestamp":8.51246, "offset":{"exp":"0.1 s", "val":0.1}}, "event":null},
-   {"name":"stopIntake", "from":{"target":6, "targetTimestamp":5.84931, "offset":{"exp":"0 s", "val":0.0}}, "event":null}]
+   {"name":"Start Intake", "from":{"target":2, "targetTimestamp":2.63132, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"Start Intake"}}},
+   {"name":"Spin Up Shooter", "from":{"target":6, "targetTimestamp":5.84931, "offset":{"exp":"1 s", "val":1.0}}, "event":{"type":"named", "data":{"name":"Spin Up Shooter"}}},
+   {"name":"Shoot Balls", "from":{"target":8, "targetTimestamp":8.51246, "offset":{"exp":"0.1 s", "val":0.1}}, "event":{"type":"sequential", "data":{"commands":[
+       {"type":"named", "data":{"name":"Shoot Balls"}},
+       {"type":"wait", "data":{"waitTime":{"exp":"2.5 s", "val":2.5}}},
+       {"type":"named", "data":{"name":"Stop All"}}]}}},
+   {"name":"Stop Intake", "from":{"target":6, "targetTimestamp":5.84931, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"Stop Intake"}}}]
 }

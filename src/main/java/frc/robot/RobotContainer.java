@@ -5,7 +5,7 @@ import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-
+import com.pathplanner.lib.auto.NamedCommands;
 
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
@@ -20,6 +20,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -71,35 +74,29 @@ public class RobotContainer {
 
   
     private void configureAutos() {
+        NamedCommands.registerCommand("Start Intake", new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
+        NamedCommands.registerCommand("Stop Intake", Commands.parallel(
+            Commands.runOnce(() -> m_intakeSubsystem.stop(), m_intakeSubsystem),
+            Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem)
+        ));
+        NamedCommands.registerCommand("Drop Intake", Commands.sequence(
+            Commands.runOnce(() -> m_intakePivotSubsystem.setPercent(-0.4), m_intakePivotSubsystem),
+            Commands.waitSeconds(0.7),
+            Commands.runOnce(() -> m_intakePivotSubsystem.stop(), m_intakePivotSubsystem)
+        ));
+
+        NamedCommands.registerCommand("Spin Up Shooter", new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(6000), m_shooterSubsystem));
+            
+        NamedCommands.registerCommand("Shoot Balls", new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
+
+        NamedCommands.registerCommand("Stop All", Commands.parallel(
+            Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
+            Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem),
+            Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
+            Commands.runOnce(() -> m_intakeSubsystem.stop(), m_intakeSubsystem)
+        ));
+
         // ===== Auto 1 =====
-        autoFactory.bind("intakeDrop",
-            Commands.sequence(
-                Commands.runOnce(() -> m_intakePivotSubsystem.setPercent(-0.4), m_intakePivotSubsystem),
-                Commands.waitSeconds(0.7),
-                Commands.runOnce(() -> m_intakePivotSubsystem.stop(), m_intakePivotSubsystem)
-            )
-        );
-        autoFactory.bind("intake",
-            new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
-        autoFactory.bind("stopIntake",
-            Commands.sequence(
-                Commands.runOnce(() -> m_intakeSubsystem.stop(), m_intakeSubsystem),
-                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem)
-            )
-        );
-        autoFactory.bind("charge",
-            Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(6000), m_shooterSubsystem)
-        );
-        autoFactory.bind("feed",
-            new FeedBall(m_indexerSubsystem, m_conveyorSubsystem)
-        );
-        autoFactory.bind("stopAll", 
-            Commands.sequence(
-                Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
-                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
-                Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem)
-            )
-        );
         AutoRoutine newPathRoutine = autoFactory.newRoutine("NewPathAuto");
         AutoTrajectory newPath = newPathRoutine.trajectory("NewPath");
         
@@ -112,6 +109,7 @@ public class RobotContainer {
 
         
         // ===== Auto 2 =====
+        //bump
         AutoRoutine testRoutine = autoFactory.newRoutine("TestAuto");
         AutoTrajectory testPath = testRoutine.trajectory("Test");
         AutoTrajectory testPath2 = testRoutine.trajectory("TestCont");
@@ -122,19 +120,10 @@ public class RobotContainer {
             )
         );
         testPath.done().onTrue(
-            Commands.sequence(
-                Commands.waitSeconds(2.5),
-                testPath2.cmd()
-            )
+            testPath2.cmd()
         );
-        testPath2.done().onTrue(
-            Commands.sequence(
-                Commands.waitSeconds(2),
-                Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
-                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
-                Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem)
-            )
-        );
+
+        //trench
         AutoRoutine testRoutineTrench = autoFactory.newRoutine("TestAuto");
         AutoTrajectory testPathTrench1 = testRoutineTrench.trajectory("Test");
         AutoTrajectory testPathTrench2 = testRoutineTrench.trajectory("TestCont2");
@@ -145,18 +134,7 @@ public class RobotContainer {
             )
         );
         testPathTrench1.done().onTrue(
-            Commands.sequence(
-                Commands.waitSeconds(2.5),
-                testPathTrench2.cmd()
-            )
-        );
-        testPathTrench2.done().onTrue(
-            Commands.sequence(
-                Commands.waitSeconds(2),
-                Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0), m_shooterSubsystem),
-                Commands.runOnce(() -> m_conveyorSubsystem.stop(), m_conveyorSubsystem),
-                Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem)
-            )
+            testPathTrench2.cmd()
         );
         // ===== Put them in chooser =====
         autoChooser.setDefaultOption("NewPath Auto", newPathRoutine.cmd());
@@ -217,6 +195,12 @@ public class RobotContainer {
             m_indexerSubsystem,
             () -> drivetrain.getState().Pose.getTranslation()
         ));
+
+
+
+
+
+
 
     }
 
