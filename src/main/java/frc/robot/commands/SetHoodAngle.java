@@ -8,13 +8,13 @@ import frc.robot.subsystems.HoodSubsystem;
 public class SetHoodAngle extends Command {
 
   private final HoodSubsystem hood;
-  private final DoubleSupplier angleDegSupplier;
+  private final Double angleDegSupplier;
 
   /**
    * @param hood Hood subsystem
    * @param angleDegSupplier Angle in degrees (constant or joystick/dashboard supplied)
    */
-  public SetHoodAngle(HoodSubsystem hood, DoubleSupplier angleDegSupplier) {
+  public SetHoodAngle(HoodSubsystem hood, Double angleDegSupplier) {
     this.hood = hood;
     this.angleDegSupplier = angleDegSupplier;
     addRequirements(hood);
@@ -22,7 +22,7 @@ public class SetHoodAngle extends Command {
 
   @Override
   public void execute() {
-    hood.setAngleDeg(angleDegSupplier.getAsDouble());
+    hood.setAngleDeg(angleDegSupplier);
   }
 
   @Override

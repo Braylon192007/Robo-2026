@@ -74,16 +74,6 @@ public class RobotContainer {
 
   
     private void configureAutos() {
-        NamedCommands.registerCommand("Start Intake", new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
-        NamedCommands.registerCommand("Stop Intake", new IntakeStop(m_intakeSubsystem, m_conveyorSubsystem));
-        NamedCommands.registerCommand("Drop Intake", new DropIntake(m_intakePivotSubsystem));
-
-        NamedCommands.registerCommand("Spin Up Shooter", new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(6000), m_shooterSubsystem));
-            
-        NamedCommands.registerCommand("Shoot Balls", new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
-
-        NamedCommands.registerCommand("Stop All", new StopAll(m_conveyorSubsystem, m_indexerSubsystem, m_shooterSubsystem, m_intakeSubsystem));
-
         // ===== Auto 1 =====
         autoFactory.bind("intakeDrop",
             Commands.sequence(
@@ -113,6 +103,12 @@ public class RobotContainer {
                 Commands.runOnce(() -> m_indexerSubsystem.stop(), m_indexerSubsystem)
             )
         );
+        autoFactory.bind("hoodUp",
+            new SetHoodAngle(m_hoodSubsystem, 30.0)
+        );
+        autoFactory.bind("hoodDown",
+            new SetHoodAngle(m_hoodSubsystem, 0.0)
+        );
         AutoRoutine newPathRoutine = autoFactory.newRoutine("NewPathAuto");
         AutoTrajectory newPath = newPathRoutine.trajectory("NewPath");
         
@@ -136,7 +132,20 @@ public class RobotContainer {
             )
         );
         testPath.done().onTrue(
-            testPath2.cmd()
+            Commands.sequence(
+                new AimAtHubBack(drivetrain, () -> 0.0, () -> 0.0).withTimeout(.5),
+                m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(6000)),
+                new WaitCommand(2.5),
+                testPath2.cmd()
+            )
+        );
+        testPath2.done().onTrue(
+            Commands.sequence(
+                new AimAtHubBack(drivetrain, () -> 0.0, () -> 0.0).withTimeout(.5),
+                m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(6000)),
+                new WaitCommand(2.5),
+                Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0))
+            )
         );
 
         //trench
@@ -152,11 +161,37 @@ public class RobotContainer {
         testPathTrench1.done().onTrue(
             testPathTrench2.cmd()
         );
+
+        AutoRoutine LTrench = autoFactory.newRoutine("LTrench");
+        AutoTrajectory LTrenchPath1 = LTrench.trajectory("LTrench");
+        AutoTrajectory LTrenchPath2 = LTrench.trajectory("LTrench2");
+        LTrench.active().onTrue(
+            Commands.sequence(
+                LTrenchPath1.resetOdometry(),
+                LTrenchPath1.cmd()
+            )
+        );
+        LTrenchPath1.done().onTrue(
+            Commands.sequence(
+                new AimAtHubBack(drivetrain, () -> 0.0, () -> 0.0).withTimeout(.5),
+                new FeedBall(m_indexerSubsystem, m_conveyorSubsystem),
+                new WaitCommand(2.5),
+                LTrenchPath2.cmd()
+            )
+        );
+        LTrenchPath2.done().onTrue(
+            Commands.sequence(
+                new AimAtHubBack(drivetrain, () -> 0.0, () -> 0.0).withTimeout(.5),
+                new FeedBall(m_indexerSubsystem, m_conveyorSubsystem),
+                new WaitCommand(2.5),
+                Commands.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0))
+            )
+        );
         // ===== Put them in chooser =====
         autoChooser.setDefaultOption("NewPath Auto", newPathRoutine.cmd());
         autoChooser.addOption("Test Auto Bump", testRoutine.cmd());
         autoChooser.addOption("Test Auto Trench", testRoutineTrench.cmd());
-
+        autoChooser.addOption("LTrench Auto", LTrench.cmd());
         SmartDashboard.putData("Auto Chooser", autoChooser);
     }
   private void configureBindings() {
@@ -211,7 +246,17 @@ public class RobotContainer {
             m_indexerSubsystem,
             () -> drivetrain.getState().Pose.getTranslation()
         ));
-
+    /* 
+    m_driverController.leftTrigger()
+        .whileTrue(new SetShooterSpeedFromPosition(
+            m_shooterSubsystem,
+            m_conveyorSubsystem,
+            m_indexerSubsystem,
+            () -> drivetrain.getState().Pose.getTranslation()
+        ));
+    m_driverController.leftTrigger()
+        .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY(), () -> -m_driverController.getLeftX()));
+    */
 
 
 
