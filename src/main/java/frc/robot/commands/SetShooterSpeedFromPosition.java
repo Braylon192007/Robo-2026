@@ -52,7 +52,7 @@ public class SetShooterSpeedFromPosition extends Command {
 
     double targetRPM = rpmFromDistanceInches(distInches);
     shooter.setFlywheelRPM(targetRPM);
-
+/* 
     boolean readyToShoot = shooter.atTargetRPM(targetRPM, kShooterReadyToleranceRPM);
 
     if (readyToShoot) {
@@ -62,12 +62,12 @@ public class SetShooterSpeedFromPosition extends Command {
       conveyor.stop();
       indexer.stop();
     }
-
+*/
     SmartDashboard.putNumber("Shooter/DistanceMeters", distMeters);
     SmartDashboard.putNumber("Shooter/DistanceInches", distInches);
     SmartDashboard.putNumber("Shooter/RPMSetpoint", targetRPM);
     SmartDashboard.putNumber("Shooter/CurrentFlywheelRPM", shooter.getFlywheelRPM());
-    SmartDashboard.putBoolean("Shooter/ReadyToShoot", readyToShoot);
+    //SmartDashboard.putBoolean("Shooter/ReadyToShoot", readyToShoot);
   }
 
   @Override
@@ -93,14 +93,14 @@ public class SetShooterSpeedFromPosition extends Command {
   }
 
   private static double rpmFromDistanceInches(double in) {
-    if (in <= 94.0) return 4250.0;
-    if (in >= 140.0) return 4900.0;
+    if (in <= 94.0) return 6000.0;
+    if (in >= 140.0) return 6000.0;
 
     if (in <= 120.0) {
-      return lerp(94.0, 4250.0, 120.0, 4500.0, in);
+      return lerp(94.0, 6000.0, 120.0, 6000.0, in);
     }
 
-    return lerp(120.0, 4500.0, 140.0, 4900.0, in);
+    return lerp(120.0, 6000.0, 140.0, 6000.0, in);
   }
 
   private static double lerp(double x0, double y0, double x1, double y1, double x) {

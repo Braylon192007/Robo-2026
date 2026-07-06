@@ -32,6 +32,8 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     autoPath.setDefaultOption("Test", "Test");
     autoPath.addOption("LeftAuto", "LeftAuto");
+    autoPath.addOption("NewAutoLeft", "NewAutoLeft");
+    autoPath.addOption("NewAutoRight", "NewAutoRight");
     flywheelRPM.setDefaultOption("Flywheel RPM:", 0.0);
     hoodStroke.setDefaultOption("Hood Stroke:", 30.0);
     SmartDashboard.putData("Auto Path", autoPath);

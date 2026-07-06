@@ -3,35 +3,35 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.3224886363636355,
-        "y": 7.384715909090909
+        "x": 5.902225392296718,
+        "y": 5.4517831669044226
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.579204545454544,
-        "y": 8.147420454545454
+        "x": 5.785777460770328,
+        "y": 5.917574893009986
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LTBumpOver"
     },
     {
       "anchor": {
-        "x": 6.693056818181819,
-        "y": 6.395261363636364
+        "x": 5.8892867332382295,
+        "y": 2.592339514978602
       },
       "prevControl": {
-        "x": 6.064340909090909,
-        "y": 3.901011363636364
+        "x": 6.872624821683308,
+        "y": 3.3169044222539235
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LTBumpOver2"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.9771689497716896,
-      "rotationDegrees": -25.917489030041384
+      "waypointRelativePos": 0.4250386398763523,
+      "rotationDegrees": -45.69245337261069
     }
   ],
   "constraintZones": [],
@@ -46,14 +46,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": -150.80251395393566
+    "velocity": 1.0,
+    "rotation": -132.87890360333856
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Left Trench",
   "idealStartingState": {
-    "velocity": 0,
-    "rotation": 0.0
+    "velocity": 1.0,
+    "rotation": 45.0
   },
   "useDefaultConstraints": true
 }

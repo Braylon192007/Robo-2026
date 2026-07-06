@@ -41,11 +41,11 @@ public class HoodSubsystem extends SubsystemBase {
         .withKG(HoodConstants.kG)
         .withGravityType(GravityTypeValue.Arm_Cosine);
 
-    config.SoftwareLimitSwitch = new SoftwareLimitSwitchConfigs()
-        .withForwardSoftLimitEnable(true)
-        .withForwardSoftLimitThreshold(angleDegToMotorRot(HoodConstants.kMaxAngleDeg))
-        .withReverseSoftLimitEnable(true)
-        .withReverseSoftLimitThreshold(angleDegToMotorRot(HoodConstants.kMinAngleDeg));
+    //config.SoftwareLimitSwitch = new SoftwareLimitSwitchConfigs()
+    //    .withForwardSoftLimitEnable(true)
+    //    .withForwardSoftLimitThreshold(angleDegToMotorRot(HoodConstants.kMaxAngleDeg))
+    //    .withReverseSoftLimitEnable(true)
+     //   .withReverseSoftLimitThreshold(angleDegToMotorRot(HoodConstants.kMinAngleDeg));
 
     hoodMotor.getConfigurator().apply(config);
 
@@ -95,6 +95,9 @@ public class HoodSubsystem extends SubsystemBase {
 
   public void stop() {
     hoodMotor.setControl(stopRequest);
+  }
+  public void setSpeed(double speed) {
+    hoodMotor.set(speed);
   }
 
   private static double angleDegToMotorRot(double angleDeg) {

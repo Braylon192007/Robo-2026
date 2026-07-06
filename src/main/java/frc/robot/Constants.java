@@ -34,7 +34,7 @@ public final class Constants {
 
     // CHANGE THESE TO YOUR REAL HOOD RANGE
     public static final double kMinAngleDeg = 0.0;
-    public static final double kMaxAngleDeg = 90.0;
+    public static final double kMaxAngleDeg = 9000.0;
     public static final double kStartingAngleDeg = 0.0;
 
     public static final double kAngleToleranceDeg = 1.0;

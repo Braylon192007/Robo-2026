@@ -43,6 +43,7 @@ public class RobotContainer {
   public final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
   public final ConveyorSubsystem m_conveyorSubsystem = new ConveyorSubsystem();
   public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
+  public final HoodSubsystem m_hoodSubsytem = new HoodSubsystem();
 
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
@@ -74,7 +75,7 @@ public class RobotContainer {
         }, m_intakeSubsystem, m_conveyorSubsystem));
 
     NamedCommands.registerCommand("Charge",
-        new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(4500), m_shooterSubsystem));
+        new InstantCommand(() -> m_shooterSubsystem.setFlywheelRPM(6000), m_shooterSubsystem));
 
     NamedCommands.registerCommand("StopShooter",
         new InstantCommand(() -> {
@@ -102,6 +103,8 @@ public class RobotContainer {
   private void buildAutos() {
     autos.put("Test", AutoBuilder.buildAuto("Test"));
     autos.put("LeftAuto", AutoBuilder.buildAuto("LeftAuto"));
+    autos.put("NewAutoLeft", AutoBuilder.buildAuto("NewAutoLeft"));
+    autos.put("NewAutoRight", AutoBuilder.buildAuto("NewAutoRight"));    
   }
 
   private void configureBindings() {
@@ -131,19 +134,24 @@ public class RobotContainer {
         .whileTrue(new FeedBall(m_indexerSubsystem, m_conveyorSubsystem));
 
     m_driverController.leftBumper()
-        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(3200)))
+        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(5000)))
         .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
 
     m_driverController.a()
         .whileTrue(new Pickup(m_intakeSubsystem, m_conveyorSubsystem));
 
     m_driverController.rightBumper()
-        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(3900)))
+        .whileTrue(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(6000)))
         .onFalse(m_shooterSubsystem.runOnce(() -> m_shooterSubsystem.setFlywheelRPM(0)));
 
     m_driverController.rightTrigger()
-        .whileTrue(new AimAtHub(drivetrain, () -> -m_driverController.getLeftY(), () -> -m_driverController.getLeftX()));
-
+        .whileTrue(new AimAtHubBack(drivetrain, () -> -m_driverController.getLeftY(), () -> -m_driverController.getLeftX()));
+    m_driverController.povUp()
+        .whileTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setSpeed(.5)))
+        .onFalse(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.stop()));
+    m_driverController.povRight()
+        .whileTrue(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.setSpeed(-.5)))
+        .onFalse(m_hoodSubsystem.runOnce(() -> m_hoodSubsystem.stop()));
     m_driverController.rightTrigger()
         .whileTrue(new SetShooterSpeedFromPosition(
             m_shooterSubsystem,
